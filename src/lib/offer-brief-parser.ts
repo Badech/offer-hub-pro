@@ -75,17 +75,19 @@ interface Doc {
 // Lexer & normalisation helpers
 // ────────────────────────────────────────────────────────────────────────────
 
+// normaliseKey() replaces all non-alphanumeric runs with a single underscore,
+// so "FAQ 1" becomes "faq_1" and "Problem Point 1" becomes "problem_point_1".
+// All regexes here must use `[\s_]*` (NOT `\s*`) between word and number.
 const ITEM_TYPES = [
-  // base singular, list key
-  { match: /^problem\s*point\s*(\d+)$/, type: "problem_point" },
-  { match: /^ingredient\s*(\d+)$/, type: "ingredient" },
-  { match: /^feature\s*(\d+)$/, type: "ingredient" }, // alias
-  { match: /^pair\s*(\d+)$/, type: "pair" },
-  { match: /^before\s*after\s*(\d+)$/, type: "pair" }, // alias
-  { match: /^testimonial\s*(\d+)$/, type: "testimonial" },
-  { match: /^review\s*(\d+)$/, type: "testimonial" }, // alias
-  { match: /^faq\s*(\d+)$/, type: "faq" },
-  { match: /^question\s*(\d+)$/, type: "faq" }, // alias
+  { match: /^problem[\s_]*point[\s_]*(\d+)$/, type: "problem_point" },
+  { match: /^ingredient[\s_]*(\d+)$/, type: "ingredient" },
+  { match: /^feature[\s_]*(\d+)$/, type: "ingredient" }, // alias
+  { match: /^pair[\s_]*(\d+)$/, type: "pair" },
+  { match: /^before[\s_]*after[\s_]*(\d+)$/, type: "pair" }, // alias
+  { match: /^testimonial[\s_]*(\d+)$/, type: "testimonial" },
+  { match: /^review[\s_]*(\d+)$/, type: "testimonial" }, // alias
+  { match: /^faq[\s_]*(\d+)$/, type: "faq" },
+  { match: /^question[\s_]*(\d+)$/, type: "faq" }, // alias
 ] as const;
 
 function isPlaceholder(s: string): boolean {
@@ -200,27 +202,36 @@ function parseDoc(markdown: string): Doc {
       continue;
     }
 
-    // Is this heading a top-level section like `# Problem Section`,
-    // `# Solution Section`, `# Basics`, etc.? Use the depth of the heading
-    // marker — only `#` (level 1) starts a new section context, but we also
-    // allow level-2 headings whose text ends in "section". Anything else is
-    // treated as a field.
+    // Heading depth & shape.
     const isLevel1 = h[1] === "#";
-    const looksLikeSection =
-      isLevel1 || /\bsection\b/i.test(text) || /^(basics|pricing|hero|sticky|seo|faq)\b/i.test(text);
     const fieldKey = normaliseKey(text);
+    // A "section" heading is one that has no value of its own — it just sets
+    // the parent-section context for the ## fields that follow. We treat any
+    // level-1 heading as a section, plus any level-2 heading whose text ends
+    // in "section" or starts with a known section name. Field headings
+    // (## Title, ## Body, etc.) are everything else.
+    const looksLikeSection =
+      isLevel1 ||
+      /\bsection\b/i.test(text) ||
+      /^(basics|pricing|hero|sticky|seo|faq)\b/i.test(text);
 
-    if (looksLikeSection && !ctx.item) {
+    // A level-1 heading ALWAYS exits any currently-open item, even if the
+    // heading turns out to be another item (handled above) or a section.
+    // Without this, `## Heading` under `# SOLUTION SECTION` would end up
+    // attached to the still-open `# Problem Point 1` item.
+    if (isLevel1) {
+      flushField();
+      ctx.item = null;
+      ctx.itemType = null;
+    }
+
+    if (looksLikeSection) {
       ctx.section = fieldKey
         .replace(/_section$/, "")
         .replace(
           /^(basics|pricing.*|hero|sticky.*|seo.*|problem|solution|ingredients?|features?|before.*|testimonials?|reviews?|faq)$/,
           "$1",
         );
-      if (isLevel1) {
-        ctx.item = null;
-        ctx.itemType = null;
-      }
       continue;
     }
 
