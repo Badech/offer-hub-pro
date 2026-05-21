@@ -3,6 +3,10 @@ import { OfferLandingPage } from "@/components/OfferLandingPage";
 import { fetchOfferBySlug } from "@/lib/server-functions";
 
 export const Route = createFileRoute("/offers/$slug")({
+  // Refetch on every visit so admin edits show up immediately on the public
+  // page without needing a hard reload.
+  staleTime: 0,
+  shouldReload: true,
   loader: async ({ params }) => {
     const offer = await fetchOfferBySlug({ data: params.slug });
     if (!offer) throw notFound();

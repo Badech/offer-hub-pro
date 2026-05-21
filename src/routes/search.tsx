@@ -6,6 +6,8 @@ import { fetchOffers } from "@/lib/server-functions";
 
 export const Route = createFileRoute("/search")({
   head: () => ({ meta: [{ title: "Search — OfferSendly" }] }),
+  staleTime: 0,
+  shouldReload: true,
   loader: async () => ({ offers: await fetchOffers() }),
   component: SearchPage,
 });

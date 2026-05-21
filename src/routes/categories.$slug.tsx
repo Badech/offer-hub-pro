@@ -4,6 +4,8 @@ import { OfferCard } from "@/components/OfferCard";
 import { fetchOffers } from "@/lib/server-functions";
 
 export const Route = createFileRoute("/categories/$slug")({
+  staleTime: 0,
+  shouldReload: true,
   loader: async () => {
     return { offers: await fetchOffers() };
   },

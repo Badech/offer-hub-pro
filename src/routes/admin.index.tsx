@@ -3,6 +3,8 @@ import { deleteOffer, fetchOffers } from "@/lib/server-functions";
 import { useState } from "react";
 
 export const Route = createFileRoute("/admin/")({
+  staleTime: 0,
+  shouldReload: true,
   loader: async () => ({ offers: await fetchOffers() }),
   component: AdminOffersList,
 });

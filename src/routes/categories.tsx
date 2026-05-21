@@ -19,6 +19,8 @@ export const Route = createFileRoute("/categories")({
       { name: "description", content: "Explore vetted offers by category." },
     ],
   }),
+  staleTime: 0,
+  shouldReload: true,
   loader: async () => {
     const [categories, offers] = await Promise.all([fetchCategories(), fetchOffers()]);
     return { categories, offers };
