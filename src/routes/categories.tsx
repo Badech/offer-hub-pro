@@ -3,7 +3,7 @@ import { GlobalLayout } from "@/components/GlobalLayout";
 import { categories, offers } from "@/data/offers";
 import { Heart, Dumbbell, DollarSign, GraduationCap, Sparkles, Code } from "lucide-react";
 
-const icons: Record<string, React.ComponentType<{ className?: string }>> = {
+const icons: Record<string, React.ComponentType<{ className?: string; strokeWidth?: number }>> = {
   "Health & Wellness": Heart,
   Fitness: Dumbbell,
   Finance: DollarSign,
