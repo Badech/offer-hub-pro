@@ -206,19 +206,17 @@ function parseDoc(markdown: string): Doc {
     const isLevel1 = h[1] === "#";
     const fieldKey = normaliseKey(text);
     // A "section" heading is one that has no value of its own — it just sets
-    // the parent-section context for the ## fields that follow. We treat any
-    // level-1 heading as a section, plus any level-2 heading whose text ends
-    // in "section" or starts with a known section name. Field headings
-    // (## Title, ## Body, etc.) are everything else.
-    const looksLikeSection =
-      isLevel1 ||
-      /\bsection\b/i.test(text) ||
-      /^(basics|pricing|hero|sticky|seo|faq)\b/i.test(text);
+    // the parent-section context for the `##` field headings that follow.
+    // We treat a heading as a section only when:
+    //   - it's level-1 (#) — these are always sections, OR
+    //   - it's level-2 (##) AND the text ends with the word "section" (e.g.
+    //     "## Hero Section"). We deliberately do NOT match `## Sticky Bar Text`
+    //     or `## SEO Title` just because they share a leading word with a
+    //     section name — those are field headings.
+    const looksLikeSection = isLevel1 || /\bsection\b/i.test(text);
 
     // A level-1 heading ALWAYS exits any currently-open item, even if the
     // heading turns out to be another item (handled above) or a section.
-    // Without this, `## Heading` under `# SOLUTION SECTION` would end up
-    // attached to the still-open `# Problem Point 1` item.
     if (isLevel1) {
       flushField();
       ctx.item = null;
@@ -226,12 +224,16 @@ function parseDoc(markdown: string): Doc {
     }
 
     if (looksLikeSection) {
-      ctx.section = fieldKey
-        .replace(/_section$/, "")
-        .replace(
-          /^(basics|pricing.*|hero|sticky.*|seo.*|problem|solution|ingredients?|features?|before.*|testimonials?|reviews?|faq)$/,
-          "$1",
-        );
+      // Normalise the section name to a short canonical form so the
+      // assembler can look up `<section>__<field>` reliably.
+      const raw = fieldKey.replace(/_section$/, "");
+      ctx.section =
+        raw.match(/^(basics|pricing|hero|sticky|seo|problem|solution|ingredients?|features?|before|testimonials?|reviews?|faq)/)?.[1] ?? raw;
+      // Singular/plural normalisation for cleaner qualified keys.
+      ctx.section = ctx.section
+        .replace(/^ingredients$/, "ingredient")
+        .replace(/^features?$/, "ingredient")
+        .replace(/^reviews?$/, "testimonial");
       continue;
     }
 
@@ -341,10 +343,12 @@ export function parseOfferBrief(markdown: string): Offer {
 
   // ── Basics ────────────────────────────────────────────────────────────
   const title = take(F, "title") ?? "";
+  // `## Subcategory` is appended as a tag (no dedicated field exists).
+  // `## Product Type` is NOT appended — it has its own dedicated `productForm`
+  // field on the offer schema.
   const tags = [
     ...takeList(F, "tags"),
     ...(take(F, "subcategory") ? [take(F, "subcategory")!] : []),
-    ...(take(F, "product_type") ? [take(F, "product_type")!] : []),
   ];
 
   // ── Problem points ────────────────────────────────────────────────────
@@ -519,7 +523,7 @@ export function parseOfferBrief(markdown: string): Offer {
     publishedAt:
       take(F, "published_date", "published_at") ?? new Date().toISOString().slice(0, 10),
     vendor: take(F, "vendor") ?? "ClickBank",
-    productForm: take(F, "product_form") ?? "",
+    productForm: take(F, "product_form", "product_type") ?? "",
     seo: {
       title: take(F, "seo_title") ?? title,
       description: take(F, "seo_description") ?? "",
