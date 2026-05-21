@@ -5,10 +5,13 @@ export function ImageUpload({
   value,
   onChange,
   label,
+  hint,
 }: {
   value: string;
   onChange: (url: string) => void;
   label: string;
+  /** Sizing/format guidance shown next to the label, e.g. "1200 × 1200 px · PNG · < 2 MB". */
+  hint?: string;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
@@ -32,7 +35,12 @@ export function ImageUpload({
 
   return (
     <div>
-      <label className="block text-[13px] font-medium text-[var(--brand)]">{label}</label>
+      <div className="flex items-baseline flex-wrap gap-x-2">
+        <label className="block text-[13px] font-medium text-[var(--brand)]">{label}</label>
+        {hint && (
+          <span className="text-[12px] text-[var(--text-muted)] font-normal">{hint}</span>
+        )}
+      </div>
       <div className="mt-2 flex flex-wrap items-start gap-3">
         {value ? (
           <img

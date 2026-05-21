@@ -349,6 +349,7 @@ export function OfferForm({
         </Field>
         <ImageUpload
           label="Hero / product image"
+          hint="1200 × 1200 px · square · PNG (transparent bg preferred) · < 2 MB"
           value={offer.heroImage}
           onChange={(url) => update("heroImage", url)}
         />
@@ -546,6 +547,7 @@ export function OfferForm({
               </Field>
               <ImageUpload
                 label="Ingredient image (optional)"
+                hint="400 × 400 px · square · JPG or PNG · < 300 KB"
                 value={it.image ?? ""}
                 onChange={(url) => onUpdate({ ...it, image: url })}
               />
@@ -715,6 +717,7 @@ export function OfferForm({
         </Field>
         <ImageUpload
           label="OG / social-share image"
+          hint="1200 × 630 px · 1.91:1 · JPG or PNG · < 1 MB · shown in Facebook/Twitter/iMessage previews"
           value={offer.seo.ogImage}
           onChange={(url) => update("seo", { ...offer.seo, ogImage: url })}
         />
