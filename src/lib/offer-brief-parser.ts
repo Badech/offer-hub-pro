@@ -186,6 +186,33 @@ function parseDoc(markdown: string): Doc {
       // this matches the user's brief style where `---` separates blocks.
       continue;
     }
+
+    // Bold-label key/value pairs:
+    //   "**Title:** Prostadine"             (value on same line)
+    //   "**Title:**\nProstadine"            (value on next line)
+    //   "**Icon:** TrendingDown"
+    //   "**Name:** Saw Palmetto"
+    // These are treated identically to `## Title` / value-below pairs.
+    // We also accept "**Title**:" (colon outside the bold span).
+    const bold = line.match(/^\s*\*\*([^*][^*]*?)\*\*\s*:?\s*(.*)$/);
+    if (bold) {
+      const labelText = bold[1].replace(/:\s*$/, "").trim();
+      const sameLineValue = bold[2].trim();
+      if (labelText) {
+        // Re-use the field machinery.
+        const bucket: Bucket = ctx.item ? ctx.item.fields : doc.fields;
+        const fieldKey = normaliseKey(labelText);
+        const keys = [fieldKey];
+        if (ctx.section && !ctx.item) keys.push(`${ctx.section}__${fieldKey}`);
+        startField(bucket, keys);
+        if (sameLineValue) {
+          // Push as the first (and possibly only) line of the field body.
+          ctx.field!.buffer.push(sameLineValue);
+        }
+        continue;
+      }
+    }
+
     // Match any heading depth (# … ######). We treat them uniformly.
     const h = line.match(/^(#{1,6})\s+(.+?)\s*#*\s*$/);
     if (!h) {
@@ -205,31 +232,39 @@ function parseDoc(markdown: string): Doc {
     // Heading depth & shape.
     const isLevel1 = h[1] === "#";
     const fieldKey = normaliseKey(text);
-    // A "section" heading is one that has no value of its own — it just sets
-    // the parent-section context for the `##` field headings that follow.
-    // We treat a heading as a section only when:
-    //   - it's level-1 (#) — these are always sections, OR
-    //   - it's level-2 (##) AND the text ends with the word "section" (e.g.
-    //     "## Hero Section"). We deliberately do NOT match `## Sticky Bar Text`
-    //     or `## SEO Title` just because they share a leading word with a
-    //     section name — those are field headings.
-    const looksLikeSection = isLevel1 || /\bsection\b/i.test(text);
 
-    // A level-1 heading ALWAYS exits any currently-open item, even if the
-    // heading turns out to be another item (handled above) or a section.
-    if (isLevel1) {
+    // A heading is a SECTION (no value of its own, just sets parent context)
+    // only when it matches a recognised section name. Otherwise it's a FIELD
+    // heading whose body text follows on subsequent lines.
+    //
+    // Why this matters: some briefs use `# Headline` / `# Heading` / `# Body`
+    // as field labels at level 1 (instead of `## Headline`). If we treated
+    // every level-1 as a section, those fields would never get stored.
+    // Note: bare `Before` and bare `After` are intentionally NOT recognised
+    // as section names — those are field headings used inside a `Before /
+    // After` section (which IS a recognised section). The same goes for
+    // `Heading`, `Body`, `Headline`, etc. — these must always be fields.
+    const isKnownSection =
+      /^(basics|pricing(?:[\s_]?(?:and|&)?[\s_]?trust)?|hero(?:[\s_]section)?|sticky(?:[\s_]bar)?(?:[\s_]?(?:and|&)?[\s_]?trust(?:[\s_]badges)?)?|problem(?:[\s_]section)?|solution(?:[\s_]section)?|ingredients?(?:[\s_]?(?:slash|or|\/)?[\s_]?features?(?:[\s_]section)?)?|features?(?:[\s_]section)?|before[\s_]?(?:slash|\/)[\s_]?after|testimonials?(?:[\s_]section)?|reviews?(?:[\s_]section)?|faq(?:s)?(?:[\s_]section)?|seo(?:[\s_]?(?:and|&)?[\s_]?disclosure)?)$/i.test(
+        text.replace(/\s+/g, " ").trim(),
+      );
+    const looksLikeSection = isKnownSection || /\bsection\b/i.test(text);
+
+    // A level-1 heading that's recognised as a section or item closes any
+    // currently-open item. A level-1 heading that's neither (i.e. a field
+    // like `# Headline`) does NOT close the item — it's just a field name.
+    if (isLevel1 && looksLikeSection) {
       flushField();
       ctx.item = null;
       ctx.itemType = null;
     }
 
     if (looksLikeSection) {
-      // Normalise the section name to a short canonical form so the
-      // assembler can look up `<section>__<field>` reliably.
       const raw = fieldKey.replace(/_section$/, "");
       ctx.section =
-        raw.match(/^(basics|pricing|hero|sticky|seo|problem|solution|ingredients?|features?|before|testimonials?|reviews?|faq)/)?.[1] ?? raw;
-      // Singular/plural normalisation for cleaner qualified keys.
+        raw.match(
+          /^(basics|pricing|hero|sticky|seo|problem|solution|ingredients?|features?|before|testimonials?|reviews?|faq)/,
+        )?.[1] ?? raw;
       ctx.section = ctx.section
         .replace(/^ingredients$/, "ingredient")
         .replace(/^features?$/, "ingredient")
@@ -411,6 +446,14 @@ export function parseOfferBrief(markdown: string): Offer {
       return { before, after };
     })
     .filter((x) => x.before || x.after);
+
+  // Fallback: if there are no `Pair N` items but the doc has top-level
+  // `# Before` / `# After` field headings, synthesise a single pair.
+  if (beforeAfter.length === 0) {
+    const before = take(F, "before__before", "before") ?? "";
+    const after = take(F, "before__after", "after") ?? "";
+    if (before || after) beforeAfter.push({ before, after });
+  }
 
   // ── Testimonials ──────────────────────────────────────────────────────
   type Tm = Offer["testimonials"][number];
