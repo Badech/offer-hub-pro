@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { Star, ShieldCheck } from "lucide-react";
-import type { Offer } from "@/data/offers";
+import type { Offer } from "@/lib/offer-schema";
 
 export function OfferCard({ offer }: { offer: Offer }) {
   return (
@@ -15,18 +15,25 @@ export function OfferCard({ offer }: { offer: Offer }) {
         </span>
       )}
       <div className="aspect-[16/9] w-full bg-[var(--surface)] flex items-center justify-center border-b border-[var(--border)]">
-        <span className="text-3xl font-medium text-[var(--text-muted)] tracking-tight">
-          {offer.title}
-        </span>
+        {offer.heroImage ? (
+          <img
+            src={offer.heroImage}
+            alt={offer.title}
+            className="h-full w-full object-cover"
+            loading="lazy"
+          />
+        ) : (
+          <span className="text-3xl font-medium text-[var(--text-muted)] tracking-tight">
+            {offer.title}
+          </span>
+        )}
       </div>
       <div className="flex flex-col gap-3 p-5 flex-1">
         <span className="text-[11px] uppercase tracking-wider text-[var(--text-muted)]">
           {offer.category}
         </span>
         <h3 className="text-[var(--text-primary)]">{offer.title}</h3>
-        <p className="text-[15px] text-[var(--text-secondary)] line-clamp-2">
-          {offer.tagline}
-        </p>
+        <p className="text-[15px] text-[var(--text-secondary)] line-clamp-2">{offer.tagline}</p>
         <div className="flex items-center gap-3 text-[13px] text-[var(--text-secondary)] mt-1">
           {offer.rating && (
             <span className="inline-flex items-center gap-1">

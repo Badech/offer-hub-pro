@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { GlobalLayout } from "@/components/GlobalLayout";
-import { categories, offers } from "@/data/offers";
+import { fetchCategories, fetchOffers } from "@/lib/server-functions";
 import { Heart, Dumbbell, DollarSign, GraduationCap, Sparkles, Code } from "lucide-react";
 
 const icons: Record<string, React.ComponentType<{ className?: string; strokeWidth?: number }>> = {
@@ -19,10 +19,15 @@ export const Route = createFileRoute("/categories")({
       { name: "description", content: "Explore vetted offers by category." },
     ],
   }),
+  loader: async () => {
+    const [categories, offers] = await Promise.all([fetchCategories(), fetchOffers()]);
+    return { categories, offers };
+  },
   component: CategoriesPage,
 });
 
 function CategoriesPage() {
+  const { categories, offers } = Route.useLoaderData();
   return (
     <GlobalLayout>
       <section className="max-w-6xl mx-auto px-6 py-16">

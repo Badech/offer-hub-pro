@@ -60,16 +60,25 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
           "Curated offers and honest reviews across health, finance, fitness, and lifestyle — only what's worth your money.",
       },
       { property: "og:title", content: "OfferSendly — Curated offers. Honest reviews." },
-      { property: "og:description", content: "Offer Hub Pro is a conversion-focused affiliate marketing website designed to drive clicks and purchases." },
+      {
+        property: "og:description",
+        content:
+          "Curated offers and honest reviews across health, finance, fitness, and lifestyle — only what's worth your money.",
+      },
       { property: "og:type", content: "website" },
+      { property: "og:site_name", content: "OfferSendly" },
+      { property: "og:url", content: "https://offersendly.com/" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:site", content: "@offersendly" },
       { name: "twitter:title", content: "OfferSendly — Curated offers. Honest reviews." },
-      { name: "description", content: "Offer Hub Pro is a conversion-focused affiliate marketing website designed to drive clicks and purchases." },
-      { name: "twitter:description", content: "Offer Hub Pro is a conversion-focused affiliate marketing website designed to drive clicks and purchases." },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/d4e11153-ba39-4957-8e35-64ff3f097af9/id-preview-2ae8c5d3--3d53d802-28b5-4b13-b91d-6fc9f23e9587.lovable.app-1779346987016.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/d4e11153-ba39-4957-8e35-64ff3f097af9/id-preview-2ae8c5d3--3d53d802-28b5-4b13-b91d-6fc9f23e9587.lovable.app-1779346987016.png" },
+      {
+        name: "twitter:description",
+        content:
+          "Curated offers and honest reviews across health, finance, fitness, and lifestyle — only what's worth your money.",
+      },
     ],
     links: [
+      { rel: "canonical", href: "https://offersendly.com/" },
       { rel: "stylesheet", href: appCss },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },

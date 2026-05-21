@@ -2,19 +2,28 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { GlobalLayout } from "@/components/GlobalLayout";
 import { OfferCard } from "@/components/OfferCard";
-import { offers, categories } from "@/data/offers";
+import { fetchCategories, fetchOffers } from "@/lib/server-functions";
 
-export const Route = createFileRoute("/offers")({
+export const Route = createFileRoute("/offers/")({
   head: () => ({
     meta: [
       { title: "All Offers — OfferSendly" },
-      { name: "description", content: "Every offer in the OfferSendly directory, filterable by category and guarantee." },
+      {
+        name: "description",
+        content:
+          "Every offer in the OfferSendly directory, filterable by category and guarantee.",
+      },
     ],
   }),
+  loader: async () => {
+    const [offers, categories] = await Promise.all([fetchOffers(), fetchCategories()]);
+    return { offers, categories };
+  },
   component: OffersPage,
 });
 
 function OffersPage() {
+  const { offers, categories } = Route.useLoaderData();
   const [selectedCats, setSelectedCats] = useState<string[]>([]);
   const [guarantee, setGuarantee] = useState<number>(0);
   const [sort, setSort] = useState<"featured" | "newest" | "rating">("featured");
@@ -29,21 +38,23 @@ function OffersPage() {
     if (sort === "rating")
       list.sort((a, b) => (b.rating?.score ?? 0) - (a.rating?.score ?? 0));
     return list;
-  }, [selectedCats, guarantee, sort]);
+  }, [offers, selectedCats, guarantee, sort]);
 
   return (
     <GlobalLayout>
       <section className="max-w-7xl mx-auto px-6 py-12">
-        <h1 className="text-[var(--text-primary)]">All Offers</h1>
+        <h1>All Offers</h1>
         <p className="mt-3 text-[var(--text-secondary)]">
           Showing {filtered.length} offer{filtered.length === 1 ? "" : "s"}
         </p>
-
         <div className="mt-10 grid md:grid-cols-[260px_1fr] gap-10">
           <aside className="space-y-8">
             <FilterGroup title="Category">
               {categories.map((c) => (
-                <label key={c} className="flex items-center gap-2 text-[14px] text-[var(--text-secondary)] cursor-pointer">
+                <label
+                  key={c}
+                  className="flex items-center gap-2 text-[14px] text-[var(--text-secondary)] cursor-pointer"
+                >
                   <input
                     type="checkbox"
                     checked={selectedCats.includes(c)}
@@ -58,7 +69,6 @@ function OffersPage() {
                 </label>
               ))}
             </FilterGroup>
-
             <FilterGroup title="Guarantee">
               {[
                 { v: 0, l: "Any" },
@@ -66,7 +76,10 @@ function OffersPage() {
                 { v: 60, l: "60+ days" },
                 { v: 365, l: "365+ days" },
               ].map((g) => (
-                <label key={g.v} className="flex items-center gap-2 text-[14px] text-[var(--text-secondary)] cursor-pointer">
+                <label
+                  key={g.v}
+                  className="flex items-center gap-2 text-[14px] text-[var(--text-secondary)] cursor-pointer"
+                >
                   <input
                     type="radio"
                     name="guarantee"
@@ -78,7 +91,6 @@ function OffersPage() {
                 </label>
               ))}
             </FilterGroup>
-
             <FilterGroup title="Sort by">
               <select
                 value={sort}
@@ -91,7 +103,6 @@ function OffersPage() {
               </select>
             </FilterGroup>
           </aside>
-
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {filtered.map((o) => (
               <OfferCard key={o.slug} offer={o} />

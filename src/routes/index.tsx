@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { GlobalLayout } from "@/components/GlobalLayout";
 import { OfferCard } from "@/components/OfferCard";
-import { offers, categories } from "@/data/offers";
+import { fetchCategories, fetchOffers } from "@/lib/server-functions";
 import { Search, Lock, DollarSign, CheckCircle2 } from "lucide-react";
 
 export const Route = createFileRoute("/")({
@@ -16,34 +16,39 @@ export const Route = createFileRoute("/")({
       },
     ],
   }),
+  loader: async () => {
+    const [offers, categories] = await Promise.all([fetchOffers(), fetchCategories()]);
+    return { offers, categories };
+  },
   component: HomePage,
 });
 
 function HomePage() {
+  const { offers, categories } = Route.useLoaderData();
   const [activeCat, setActiveCat] = useState<string>("All");
   const featured = offers.filter((o) => o.featured);
   const healthOffers = offers.filter((o) => o.category === "Health & Wellness");
   const fitnessOffers = offers.filter((o) => o.category === "Fitness");
-
   const filtered =
     activeCat === "All" ? featured : featured.filter((o) => o.category === activeCat);
 
   return (
     <GlobalLayout>
-      {/* Hero */}
-      <section className="bg-[var(--surface)] border-b border-[var(--border)]">
+      <section className="section-warm border-b border-[var(--border)]">
         <div className="max-w-7xl mx-auto px-6 py-20 md:py-28 grid md:grid-cols-2 gap-12 items-center">
           <div>
-            <h1 className="text-[var(--text-primary)]">
-              Curated offers that actually deliver.
-            </h1>
+            <h1>Curated offers that actually deliver.</h1>
             <p className="mt-6 text-[18px] text-[var(--text-secondary)] max-w-xl">
               We review and handpick the best digital products across health, finance, and
               lifestyle — so you only see the ones worth your money.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
-              <Link to="/offers" className="btn-primary">Browse All Offers</Link>
-              <Link to="/how-we-review" className="btn-ghost">How We Review</Link>
+              <Link to="/offers" className="btn-primary">
+                Browse All Offers
+              </Link>
+              <Link to="/how-we-review" className="btn-ghost">
+                How We Review
+              </Link>
             </div>
           </div>
           <div className="relative h-[360px] hidden md:block">
@@ -74,7 +79,6 @@ function HomePage() {
         </div>
       </section>
 
-      {/* Category pills */}
       <section className="border-b border-[var(--border)]">
         <div className="max-w-7xl mx-auto px-6 py-6 flex gap-2 overflow-x-auto">
           {["All", ...categories].map((c) => {
@@ -96,10 +100,9 @@ function HomePage() {
         </div>
       </section>
 
-      {/* Featured grid */}
       <section className="max-w-7xl mx-auto px-6 py-20">
         <div className="flex items-end justify-between mb-10">
-          <h2 className="text-[var(--text-primary)]">Editor's Picks This Week</h2>
+          <h2>Editor's Picks This Week</h2>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filtered.map((o) => (
@@ -113,8 +116,7 @@ function HomePage() {
         </div>
       </section>
 
-      {/* Trust bar */}
-      <section className="bg-[var(--surface)] border-y border-[var(--border)]">
+      <section className="section-warm border-y border-[var(--border)]">
         <div className="max-w-7xl mx-auto px-6 py-16 grid grid-cols-1 md:grid-cols-4 gap-10 text-center">
           <TrustItem
             icon={<Search className="w-6 h-6 text-[var(--accent)]" />}
@@ -139,7 +141,6 @@ function HomePage() {
         </div>
       </section>
 
-      {/* Category previews */}
       {[
         { title: "Health & Wellness", items: healthOffers },
         { title: "Fitness", items: fitnessOffers },
@@ -147,7 +148,7 @@ function HomePage() {
         row.items.length === 0 ? null : (
           <section key={row.title} className="max-w-7xl mx-auto px-6 py-16">
             <div className="flex items-center justify-between mb-8">
-              <h2 className="text-[var(--text-primary)]">{row.title}</h2>
+              <h2>{row.title}</h2>
               <Link to="/offers" className="text-[var(--accent)] font-medium hover:underline">
                 See all →
               </Link>
@@ -163,8 +164,7 @@ function HomePage() {
         ),
       )}
 
-      {/* About strip */}
-      <section className="bg-[var(--accent)] text-white">
+      <section className="section-dark">
         <div className="max-w-4xl mx-auto px-6 py-20 text-center">
           <h2 className="text-white">Editorial first. Always.</h2>
           <p className="mt-6 text-[17px] text-white/85 leading-relaxed">

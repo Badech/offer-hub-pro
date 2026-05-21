@@ -1,4 +1,4 @@
-import type { Offer } from "@/data/offers";
+import type { Offer } from "@/lib/offer-schema";
 
 export function ConversionLayout({
   offer,
@@ -9,10 +9,7 @@ export function ConversionLayout({
 }) {
   return (
     <div className="min-h-screen flex flex-col bg-[var(--background)]">
-      <div
-        className="sticky top-0 z-50 h-11 flex items-center px-4 md:px-6 text-white"
-        style={{ backgroundColor: "#0F172A" }}
-      >
+      <div className="sticky top-0 z-50 h-11 flex items-center px-4 md:px-6 text-white section-dark">
         <div className="flex items-center gap-3 flex-1 min-w-0">
           <a href="/" className="text-[15px] font-semibold tracking-tight shrink-0">
             OfferSendly
@@ -26,7 +23,7 @@ export function ConversionLayout({
           href={offer.affiliateUrl}
           target="_blank"
           rel="noopener sponsored"
-          className="inline-flex items-center bg-[var(--accent)] hover:bg-[var(--accent-hover)] transition-colors text-white text-[13px] font-medium px-3 py-1.5 rounded-md"
+          className="shrink-0 inline-flex items-center justify-center bg-[var(--accent)] hover:bg-[var(--accent-hover)] transition-colors text-white text-[13px] font-semibold px-3 py-1.5 rounded-md min-h-[36px]"
         >
           Get {offer.title} →
         </a>

@@ -4,6 +4,10 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* ──────────────────────────────────────────────────────────────────────────
+   OfferSendly design tokens (unified Spartamax palette + typography)
+   ────────────────────────────────────────────────────────────────────────── */
+
 @theme inline {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
 
@@ -17,6 +21,7 @@
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-surface: var(--surface);
+  --color-surface-alt: var(--surface-alt);
   --color-border: var(--border);
   --color-input: var(--border);
   --color-ring: var(--accent);
@@ -25,8 +30,14 @@
   --color-text-secondary: var(--text-secondary);
   --color-text-muted: var(--text-muted);
 
+  /* Brand */
+  --color-brand: var(--brand);
+  --color-brand-soft: var(--brand-soft);
+
+  /* CTA / accent */
   --color-accent: var(--accent);
   --color-accent-hover: var(--accent-hover);
+  --color-accent-soft: var(--accent-soft);
   --color-accent-foreground: #ffffff;
 
   --color-tag: var(--tag-bg);
@@ -58,23 +69,41 @@
   --color-sidebar-border: var(--border);
   --color-sidebar-ring: var(--accent);
 
-  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.08);
+  --shadow-card: 0 1px 3px rgba(15, 23, 42, 0.08);
 }
 
 :root {
+  /* Surfaces */
   --background: #ffffff;
-  --foreground: #0f0e0c;
-  --surface: #f8f7f4;
-  --border: #e5e3de;
-  --text-primary: #0f0e0c;
-  --text-secondary: #6b6860;
-  --text-muted: #9c9a96;
-  --accent: #1b4332;
-  --accent-hover: #145028;
-  --tag-bg: #ecfdf5;
-  --tag-fg: #065f46;
+  --foreground: #0f172a;
+  --surface: #f8f7f4; /* alternating section background */
+  --surface-alt: #faf7f2; /* warm beige — hero / featured surfaces */
+  --border: #e7e2d8;
+
+  /* Text */
+  --text-primary: #0f172a; /* deep navy */
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
+
+  /* Brand — deep navy. Used for headings, dark sections, structural blocks. */
+  --brand: #0f172a;
+  --brand-soft: #1e293b;
+
+  /* Accent — warm amber. Used for ALL CTAs, links, accent icons. */
+  --accent: #d97706;
+  --accent-hover: #b45309;
+  --accent-soft: #fff7ed;
+
+  /* Tags / pills */
+  --tag-bg: #fff7ed;
+  --tag-fg: #b45309;
+
   --warning: #b45309;
 }
+
+/* ──────────────────────────────────────────────────────────────────────────
+   Base typography (unified across every page — matches Spartamax hero scale)
+   ────────────────────────────────────────────────────────────────────────── */
 
 @layer base {
   * {
@@ -89,39 +118,39 @@
     text-rendering: optimizeLegibility;
   }
   h1 {
-    font-size: 42px;
+    font-size: clamp(34px, 5vw, 52px);
     font-weight: 500;
-    line-height: 1.1;
+    line-height: 1.08;
     letter-spacing: -0.02em;
+    color: var(--brand);
   }
   h2 {
-    font-size: 30px;
+    font-size: clamp(26px, 3.4vw, 34px);
     font-weight: 500;
     line-height: 1.2;
     letter-spacing: -0.01em;
+    color: var(--brand);
   }
   h3 {
     font-size: 22px;
-    font-weight: 500;
+    font-weight: 600;
     line-height: 1.3;
+    color: var(--brand);
   }
   p {
     line-height: 1.75;
   }
-  @media (max-width: 640px) {
-    h1 {
-      font-size: 32px;
-    }
-    h2 {
-      font-size: 24px;
-    }
-    h3 {
-      font-size: 20px;
-    }
+  a {
+    color: inherit;
   }
 }
 
+/* ──────────────────────────────────────────────────────────────────────────
+   Components — matched 1:1 to the Spartamax landing page
+   ────────────────────────────────────────────────────────────────────────── */
+
 @layer components {
+  /* Primary CTA — warm amber, white text, large tap target, subtle hover scale */
   .btn-primary {
     display: inline-flex;
     align-items: center;
@@ -129,32 +158,70 @@
     gap: 8px;
     background-color: var(--accent);
     color: #ffffff;
-    padding: 12px 20px;
+    padding: 16px 32px;
     border-radius: 8px;
-    font-weight: 500;
-    font-size: 15px;
-    transition: background-color 150ms ease;
+    font-weight: 600;
+    font-size: 17px;
+    min-height: 48px;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+    transition:
+      background-color 150ms ease,
+      transform 150ms ease;
   }
   .btn-primary:hover {
     background-color: var(--accent-hover);
+    transform: scale(1.02);
   }
+  .btn-primary:active {
+    transform: scale(0.99);
+  }
+
+  /* Secondary CTA — navy outline / ghost on light surfaces */
   .btn-ghost {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
     background-color: transparent;
-    color: var(--text-primary);
-    padding: 12px 20px;
+    color: var(--brand);
+    padding: 16px 32px;
     border-radius: 8px;
-    font-weight: 500;
-    font-size: 15px;
+    font-weight: 600;
+    font-size: 17px;
+    min-height: 48px;
     border: 1px solid var(--border);
-    transition: background-color 150ms ease;
+    transition:
+      background-color 150ms ease,
+      border-color 150ms ease;
   }
   .btn-ghost:hover {
     background-color: var(--surface);
+    border-color: var(--brand);
   }
+
+  /* Inverse CTA — white pill on dark navy sections */
+  .btn-on-dark {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background-color: #ffffff;
+    color: var(--brand);
+    padding: 16px 32px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 17px;
+    min-height: 48px;
+    transition:
+      background-color 150ms ease,
+      transform 150ms ease;
+  }
+  .btn-on-dark:hover {
+    background-color: rgba(255, 255, 255, 0.95);
+    transform: scale(1.02);
+  }
+
+  /* Pill / tag — warm amber-soft background */
   .pill {
     display: inline-flex;
     align-items: center;
@@ -162,14 +229,27 @@
     padding: 6px 12px;
     border-radius: 9999px;
     font-size: 13px;
-    font-weight: 500;
+    font-weight: 600;
     background-color: var(--tag-bg);
     color: var(--tag-fg);
   }
+
+  /* Card surface — matches Spartamax problem/ingredient/testimonial cards */
   .card {
     background: var(--background);
     border: 1px solid var(--border);
     border-radius: 12px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+  }
+
+  /* Dark navy section — guarantee/about strips, sticky promo bar */
+  .section-dark {
+    background-color: var(--brand);
+    color: #ffffff;
+  }
+
+  /* Warm beige section — hero / featured surfaces */
+  .section-warm {
+    background-color: var(--surface-alt);
   }
 }

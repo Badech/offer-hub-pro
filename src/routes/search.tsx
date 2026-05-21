@@ -2,20 +2,20 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { GlobalLayout } from "@/components/GlobalLayout";
 import { OfferCard } from "@/components/OfferCard";
-import { offers } from "@/data/offers";
+import { fetchOffers } from "@/lib/server-functions";
 
 export const Route = createFileRoute("/search")({
-  head: () => ({
-    meta: [{ title: "Search — OfferSendly" }],
-  }),
+  head: () => ({ meta: [{ title: "Search — OfferSendly" }] }),
+  loader: async () => ({ offers: await fetchOffers() }),
   component: SearchPage,
 });
 
 function SearchPage() {
+  const { offers } = Route.useLoaderData();
   const [q, setQ] = useState("");
   const results = q.trim()
     ? offers.filter((o) =>
-        (o.title + " " + o.tagline + " " + o.category + " " + o.tags.join(" "))
+        (o.title + " " + o.tagline + " " + o.category + " " + (o.tags ?? []).join(" "))
           .toLowerCase()
           .includes(q.toLowerCase()),
       )
@@ -24,7 +24,11 @@ function SearchPage() {
     <GlobalLayout>
       <section className="max-w-5xl mx-auto px-6 py-16">
         <h1>Search</h1>
+        <label className="sr-only" htmlFor="search-input">
+          Search offers
+        </label>
         <input
+          id="search-input"
           autoFocus
           value={q}
           onChange={(e) => setQ(e.target.value)}

@@ -1,14 +1,18 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { GlobalLayout } from "@/components/GlobalLayout";
 import { OfferCard } from "@/components/OfferCard";
-import { offers } from "@/data/offers";
+import { fetchOffers } from "@/lib/server-functions";
 
 export const Route = createFileRoute("/categories/$slug")({
+  loader: async () => {
+    return { offers: await fetchOffers() };
+  },
   component: CategoryPage,
 });
 
 function CategoryPage() {
   const { slug } = Route.useParams();
+  const { offers } = Route.useLoaderData();
   const decoded = decodeURIComponent(slug);
   const list = offers.filter((o) => o.category === decoded);
   return (
