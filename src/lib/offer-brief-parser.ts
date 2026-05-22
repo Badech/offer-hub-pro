@@ -261,20 +261,36 @@ function parseDoc(markdown: string): Doc {
     //   Text:
     //   LIMITED TIME: Over 80% Off Today
     // would mistake "LIMITED TIME" as a NEW field and discard the actual
-    // value. The "buffer empty" check means: if we just opened a field and
-    // haven't seen its value yet, the next text line IS the value — even
-    // if that text contains a colon.
+    // value.
     //
-    // Additionally, the label must:
-    //   - Start with a capital
-    //   - Be short (≤ 40 chars)
-    //   - Contain only letters/digits/spaces/&/-/–
-    //   - Not contain ! ? ' " ( ) % — these mark sentences, not labels
+    // Some briefs use a TWO-colon label form for grouped fields:
+    //   "Trust: Guarantee Text:" + value below
+    //   "Trust: Shipping Text:"  + value below
+    // The label here is "Trust: Guarantee Text" — we treat everything up
+    // to the LAST colon (when there are multiple) as the label, IF the
+    // last colon is followed by nothing or only whitespace (i.e. the
+    // value is on the next line). Otherwise the FIRST colon splits.
     const isAwaitingFieldValue =
       ctx.field !== null && ctx.field.buffer.length === 0;
-    const plainKv = !isAwaitingFieldValue
-      ? line.match(/^([A-Z][A-Za-z0-9 /&\-]{1,40}?)\s*:\s*(.*)$/)
-      : null;
+    let plainKv: RegExpMatchArray | null = null;
+    if (!isAwaitingFieldValue) {
+      // Try last-colon split first ONLY when the line ends with ":" or has
+      // empty whitespace after the last colon. This handles "Trust: Foo:".
+      const trailingColon = line.match(/^(.+):\s*$/);
+      if (trailingColon) {
+        const label = trailingColon[1].trim();
+        // Must look like a label: short, capital-first, no sentence
+        // punctuation. "LIMITED TIME" → not picked up here either because
+        // the empty-buffer guard above is already protecting it; but we
+        // still apply a length cap (≤ 60) to be safe.
+        if (label.length <= 60 && /^[A-Z][A-Za-z0-9 :/&\-]+$/.test(label)) {
+          plainKv = [line, label, ""] as unknown as RegExpMatchArray;
+        }
+      }
+      if (!plainKv) {
+        plainKv = line.match(/^([A-Z][A-Za-z0-9 /&\-]{1,40}?)\s*:\s*(.*)$/);
+      }
+    }
     if (plainKv) {
       const labelText = plainKv[1].trim();
       const sameLineValue = plainKv[2].trim();
@@ -285,6 +301,18 @@ function parseDoc(markdown: string): Doc {
       startField(bucket, keys);
       if (sameLineValue) ctx.field!.buffer.push(sameLineValue);
       continue;
+    }
+
+    // (d) "☑️ Show "Verified" pill" — standalone checkbox line inside a
+    // testimonial item. Translate to verified: true. Same for "☐" → false.
+    if (ctx.item && ctx.itemType === "testimonial") {
+      const checkboxLine = line.match(/^([\u2611\u2705\u2713\u2714\u2610\u2B1C\u274C\u2717\u2718])\s*(.+)$/);
+      if (checkboxLine && /verified/i.test(checkboxLine[2])) {
+        const isTrue = /[\u2611\u2705\u2713\u2714]/.test(checkboxLine[1]);
+        flushField();
+        ctx.item.fields.set("verified", isTrue ? "yes" : "no");
+        continue;
+      }
     }
 
     // Bold-label key/value pairs:
@@ -422,13 +450,22 @@ function takeBullets(bucket: Bucket | undefined, ...keys: string[]): string[] {
 }
 
 function takeBool(bucket: Bucket | undefined, ...keys: string[]): boolean | undefined {
-  const v = take(bucket, ...keys);
-  if (!v) return;
-  // Loose match: the first word decides.
-  const head = v.toLowerCase().match(/^[a-z]+/);
+  // First strip any leading checkbox/checkmark/cross emoji that some brief
+  // formats prefix to the value (e.g. "☑️ Show in Editor's Picks" or
+  // "❌ Hide"). Then match the first word to a known true/false vocab.
+  const raw = take(bucket, ...keys);
+  if (!raw) return;
+  // ☑ ☑️ ✅ ✓ ✔️ → true; ☐ ⬜ ❌ ✗ ✘ → false. Look at the leading symbol
+  // BEFORE checking for English words, so "☑️ Show in Editor's Picks" is
+  // unambiguously truthy regardless of the trailing words.
+  const trimmed = raw.trim();
+  const firstChar = trimmed[0];
+  if (firstChar && /[\u2611\u2705\u2713\u2714]/.test(firstChar)) return true;
+  if (firstChar && /[\u2610\u2B1C\u274C\u2717\u2718]/.test(firstChar)) return false;
+  const head = trimmed.toLowerCase().match(/^[a-z]+/);
   if (!head) return;
-  if (["yes", "enabled", "true", "on", "y"].includes(head[0])) return true;
-  if (["no", "disabled", "false", "off", "n"].includes(head[0])) return false;
+  if (["yes", "enabled", "true", "on", "y", "show"].includes(head[0])) return true;
+  if (["no", "disabled", "false", "off", "n", "hide"].includes(head[0])) return false;
 }
 
 function sortedItems(map: Map<number, Item> | undefined): Item[] {
