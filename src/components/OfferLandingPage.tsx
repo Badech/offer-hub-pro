@@ -228,10 +228,25 @@ export function OfferLandingPage({ offer }: { offer: Offer }) {
           text-align: center;
           min-width: 120px;
           position: relative;
+          /* Clickable: lift on hover + show pointer cursor */
+          cursor: pointer;
+          color: inherit;
+          text-decoration: none;
+          display: block;
+          transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
         }
+        .osl-price-badge:hover {
+          transform: translateY(-2px);
+          border-color: var(--osl-gold);
+          box-shadow: 0 6px 24px rgba(200,150,46,0.18);
+        }
+        .osl-price-badge:active { transform: translateY(0); }
         .osl-price-badge.featured {
           border-color: var(--osl-gold);
           background: rgba(200,150,46,0.08);
+        }
+        .osl-price-badge.featured:hover {
+          box-shadow: 0 8px 32px rgba(200,150,46,0.3);
         }
         .osl-price-badge .lbl {
           font-size: 10px; text-transform: uppercase;
@@ -679,14 +694,24 @@ function Hero({ offer }: { offer: Offer }) {
 
         <div className="osl-price-row">
           {tiers.map((t, i) => (
-            <div key={i} className={`osl-price-badge${t.featured ? " featured" : ""}`}>
+            // Each price badge is a real <a> linking to the affiliate URL —
+            // visitors who click "$49" intuitively expect to be taken to
+            // checkout, not just have the price highlighted.
+            <a
+              key={i}
+              href={offer.affiliateUrl}
+              target="_blank"
+              rel="noopener sponsored"
+              className={`osl-price-badge${t.featured ? " featured" : ""}`}
+              aria-label={`Buy ${t.label} of ${offer.title} at $${t.price} ${t.per}`}
+            >
               {t.featured && tiers.length > 1 && (
                 <span className="osl-best-tag">{t.bestValueTag || "Best Value"}</span>
               )}
               <div className="lbl">{t.label}</div>
               <div className="num">${t.price}</div>
               <div className="per">{t.per}</div>
-            </div>
+            </a>
           ))}
         </div>
 
