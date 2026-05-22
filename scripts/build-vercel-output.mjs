@@ -66,14 +66,94 @@ await copyTree(SRC_SERVER, OUT_FUNC);
 // handler function: (req: Request) => Promise<Response>. TanStack Start's
 // build output default-exports `{ fetch: handler }` (the createServerEntry
 // shape), so we unwrap `.fetch` here.
+// Vercel's Node serverless launcher calls our default export with a
+// Node-style (req, res) — req.url is a path like "/", not a full URL.
+// TanStack Start's handler expects a Web Fetch `Request` with a full URL.
+// This wrapper bridges the two: convert the incoming Node IncomingMessage
+// to a Fetch Request, await the Fetch Response, stream it back to the
+// Node ServerResponse.
 await writeFile(
   join(OUT_FUNC, "index.mjs"),
   `import server from "./server.js";
+
 const fetchHandler = server?.fetch ?? server;
 if (typeof fetchHandler !== "function") {
   throw new Error("SSR entry did not export a fetch handler — got: " + typeof fetchHandler);
 }
-export default fetchHandler;
+
+function buildRequestUrl(req) {
+  const host =
+    req.headers["x-forwarded-host"] ||
+    req.headers.host ||
+    "localhost";
+  const proto =
+    req.headers["x-forwarded-proto"] ||
+    (req.socket && req.socket.encrypted ? "https" : "http");
+  return new URL(req.url || "/", \`\${proto}://\${host}\`).toString();
+}
+
+async function readBody(req) {
+  if (req.method === "GET" || req.method === "HEAD") return undefined;
+  return new Promise((resolve, reject) => {
+    const chunks = [];
+    req.on("data", (c) => chunks.push(typeof c === "string" ? Buffer.from(c) : c));
+    req.on("end", () => resolve(Buffer.concat(chunks)));
+    req.on("error", reject);
+  });
+}
+
+export default async function handler(req, res) {
+  try {
+    const url = buildRequestUrl(req);
+    const headers = new Headers();
+    for (const [k, v] of Object.entries(req.headers)) {
+      if (Array.isArray(v)) for (const vv of v) headers.append(k, vv);
+      else if (v !== undefined) headers.set(k, String(v));
+    }
+    const body = await readBody(req);
+    const request = new Request(url, {
+      method: req.method,
+      headers,
+      body: body && body.length ? body : undefined,
+      duplex: body ? "half" : undefined,
+    });
+
+    const response = await fetchHandler(request);
+
+    res.statusCode = response.status;
+    response.headers.forEach((value, key) => {
+      if (key.toLowerCase() === "set-cookie") {
+        // Web Headers folds set-cookie into a single comma-joined string;
+        // split on \\n so multiple cookies survive when present.
+        for (const cookie of value.split(/,(?=[^;]+=)/g)) {
+          res.appendHeader("set-cookie", cookie.trim());
+        }
+      } else {
+        res.setHeader(key, value);
+      }
+    });
+
+    if (!response.body) {
+      res.end();
+      return;
+    }
+    // Stream the Web ReadableStream to the Node response.
+    const reader = response.body.getReader();
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      res.write(value);
+    }
+    res.end();
+  } catch (err) {
+    console.error("[ssr] handler crashed:", err);
+    if (!res.headersSent) {
+      res.statusCode = 500;
+      res.setHeader("content-type", "text/plain");
+    }
+    res.end("Internal error: " + (err?.message || "unknown"));
+  }
+}
 `,
   "utf8",
 );
