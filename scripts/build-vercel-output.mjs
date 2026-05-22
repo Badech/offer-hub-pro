@@ -78,6 +78,17 @@ export default fetchHandler;
   "utf8",
 );
 
+// Drop a package.json with "type": "module" inside the function dir so Node
+// treats server.js (and any other .js files in the bundle) as ESM. Without
+// this, Vercel's Node runtime falls back to CommonJS resolution and barfs
+// on the `import { AsyncLocalStorage } from "node:async_hooks"` at line 1
+// of server.js — "Cannot use import statement outside a module".
+await writeFile(
+  join(OUT_FUNC, "package.json"),
+  JSON.stringify({ type: "module" }, null, 2),
+  "utf8",
+);
+
 // .vc-config.json tells Vercel how to invoke the function.
 await writeFile(
   join(OUT_FUNC, ".vc-config.json"),
