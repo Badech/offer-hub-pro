@@ -62,11 +62,19 @@ console.log(`  ✓ static: copied ${countFiles(OUT_STATIC)} files from dist/clie
 // SSR function: copy dist/server/* into the function bundle.
 await copyTree(SRC_SERVER, OUT_FUNC);
 
-// The Vercel Node runtime wants an `index.mjs` (or .js) at the root that
-// default-exports the handler. The built file is `server.js` — re-export it.
+// The Vercel Node runtime expects index.mjs to default-export a Web Fetch
+// handler function: (req: Request) => Promise<Response>. TanStack Start's
+// build output default-exports `{ fetch: handler }` (the createServerEntry
+// shape), so we unwrap `.fetch` here.
 await writeFile(
   join(OUT_FUNC, "index.mjs"),
-  `import handler from "./server.js";\nexport default handler;\n`,
+  `import server from "./server.js";
+const fetchHandler = server?.fetch ?? server;
+if (typeof fetchHandler !== "function") {
+  throw new Error("SSR entry did not export a fetch handler — got: " + typeof fetchHandler);
+}
+export default fetchHandler;
+`,
   "utf8",
 );
 

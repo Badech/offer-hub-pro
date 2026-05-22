@@ -16,6 +16,13 @@ export default defineConfig({
   // either — that would balloon the function size). So we bundle every
   // dependency INTO server.js for the SSR environment, leaving only Node
   // built-ins (node:async_hooks, node:crypto, etc.) as externals.
+  //
+  // Also: preserveEntrySignatures: 'strict' keeps the SSR entry's `default`
+  // export alive. Without it, Vite's tree-shaker drops `default` because
+  // nothing INSIDE the bundle imports it (the Vercel function wrapper at
+  // .vercel/output/functions/_ssr.func/index.mjs imports it from outside,
+  // which Rollup can't see — so it gets eliminated and the wrapper imports
+  // `undefined`, causing FUNCTION_INVOCATION_FAILED at request time).
   environments: {
     ssr: {
       resolve: {
@@ -35,6 +42,11 @@ export default defineConfig({
           "node:util",
           "node:zlib",
         ],
+      },
+      build: {
+        rollupOptions: {
+          preserveEntrySignatures: "strict",
+        },
       },
     },
   },
