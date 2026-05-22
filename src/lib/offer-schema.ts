@@ -30,6 +30,9 @@ export const SeoSchema = z.object({
 
 export const ProblemPointSchema = z.object({
   icon: z.string().default("TrendingDown"),
+  /** Optional emoji shown before the label (e.g. "⚡"). When set, takes
+   *  visual priority over the lucide icon in the redesigned template. */
+  emoji: z.string().optional(),
   label: z.string().min(1),
   description: z.string().min(1),
 });
@@ -48,6 +51,8 @@ export const IngredientSchema = z.object({
   name: z.string().min(1),
   image: z.string().optional(),
   benefit: z.string().min(1),
+  /** Optional dose/format line shown above the benefit, e.g. "200mg · Standardized 2%". */
+  dose: z.string().optional(),
 });
 
 export const BeforeAfterSchema = z.object({
@@ -62,6 +67,12 @@ export const TestimonialSchema = z.object({
   rating: z.number().int().min(1).max(5),
   quote: z.string().min(1),
   verified: z.boolean().default(true),
+  /** Optional "City, ST" line shown after the name. */
+  location: z.string().optional(),
+  /** Optional occupation line shown below name+location. */
+  occupation: z.string().optional(),
+  /** Optional tier (e.g. "6-bottle customer") shown next to occupation. */
+  bottleTier: z.string().optional(),
 });
 
 export const FaqSchema = z.object({
@@ -72,6 +83,24 @@ export const FaqSchema = z.object({
 export const StickyBarSchema = z.object({
   text: z.string().default("365-Day Risk-Free Guarantee"),
   ctaLabel: z.string().default("Get It Now →"),
+});
+
+/** Top urgency bar above the hero — opt-in per offer. */
+export const TopBarSchema = z.object({
+  /** Leading emoji (e.g. "🔥"). Defaults to empty so older offers stay clean. */
+  emoji: z.string().default("🔥"),
+  /** Main text. Often something like
+   *  "LIMITED TIME: 6-Bottle Bundle Now 29% Off + 2 Free Guides — Today Only". */
+  text: z.string().default(""),
+});
+
+/** Single price-tier badge shown in the hero pricing strip. */
+export const PriceTierSchema = z.object({
+  label: z.string().min(1), // "1 Bottle"
+  price: z.number().nonnegative(), // 69
+  per: z.string().default(""), // "/ bottle · free ship"
+  featured: z.boolean().default(false),
+  bestValueTag: z.string().optional(), // "Best Value" pill on the featured tier
 });
 
 export const TrustBadgesSchema = z.object({
@@ -104,6 +133,8 @@ export const OfferSchema = z.object({
     .object({
       score: z.number().min(0).max(5),
       label: z.string(),
+      /** Optional review count rendered as e.g. "2,300+ customer reviews". */
+      count: z.number().int().nonnegative().optional(),
     })
     .optional(),
   featured: z.boolean().default(false),
@@ -114,6 +145,14 @@ export const OfferSchema = z.object({
   hero: HeroSchema,
   stickyBar: StickyBarSchema.optional(),
   trustBadges: TrustBadgesSchema.optional(),
+  /** Top urgency bar above the hero. Optional — falls back to a generic
+   *  "{N}-Day Risk-Free Guarantee" message if not set. */
+  topBar: TopBarSchema.optional(),
+  /** Eyebrow pill above the hero h1, e.g. "Independent Review · Verified ClickBank Offer". */
+  eyebrow: z.string().optional(),
+  /** Explicit pricing tiers shown in the hero. If unset, the template
+   *  derives a 3-tier strip from `price.from`/`price.to`. */
+  pricingTiers: z.array(PriceTierSchema).optional(),
   problem: ProblemSchema,
   solution: SolutionSchema,
   ingredients: z.array(IngredientSchema).default([]),

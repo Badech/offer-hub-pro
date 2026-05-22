@@ -574,12 +574,16 @@ export function OfferLandingPage({ offer }: { offer: Offer }) {
 // ────────────────────────────────────────────────────────────────────────────
 
 function TopBar({ offer }: { offer: Offer }) {
+  // Prefer the dedicated topBar block when set; else fall back to stickyBar
+  // text; else synthesise something from the guarantee. Same for emoji.
+  const emoji = offer.topBar?.emoji || "🔥";
   const text =
+    offer.topBar?.text?.trim() ||
     offer.stickyBar?.text?.trim() ||
     `${offer.guarantee.days}-Day Risk-Free Guarantee — Limited-Time Pricing Active`;
   return (
     <div className="osl-topbar">
-      🔥 <strong>LIMITED TIME:</strong> {text}
+      {emoji} <strong>{text}</strong>
     </div>
   );
 }
@@ -593,30 +597,39 @@ function Hero({ offer }: { offer: Offer }) {
     tb?.shippingText || "Free US Shipping (3+)",
   ];
 
-  // Build price tiers: if price.from < price.to, infer 3 tiers (1 / 3 / 6).
-  // Otherwise fall back to a single tier badge.
-  const single = !offer.price.to || offer.price.to <= offer.price.from;
-  const tiers = single
-    ? [{ label: offer.price.unit || "Bottle", price: offer.price.from, per: offer.price.unit, featured: true }]
-    : [
-        { label: `1 ${unitNoun(offer.price.unit)}`, price: offer.price.to, per: `/ ${unitNoun(offer.price.unit)}`, featured: false },
-        {
-          label: `3 ${pluralNoun(offer.price.unit)}`,
-          price: midPrice(offer.price.from, offer.price.to),
-          per: `/ ${unitNoun(offer.price.unit)} · free ship`,
-          featured: false,
-        },
-        {
-          label: `6 ${pluralNoun(offer.price.unit)}`,
-          price: offer.price.from,
-          per: `/ ${unitNoun(offer.price.unit)} · free ship + bonuses`,
-          featured: true,
-        },
-      ];
+  // Prefer explicit pricingTiers from the DB. Otherwise derive a 1/3/6
+  // strip from price.from/price.to, or fall back to a single tier.
+  type Tier = { label: string; price: number; per: string; featured: boolean; bestValueTag?: string };
+  let tiers: Tier[];
+  if (offer.pricingTiers && offer.pricingTiers.length > 0) {
+    tiers = offer.pricingTiers;
+  } else {
+    const single = !offer.price.to || offer.price.to <= offer.price.from;
+    tiers = single
+      ? [{ label: offer.price.unit || "Bottle", price: offer.price.from, per: offer.price.unit, featured: true }]
+      : [
+          { label: `1 ${unitNoun(offer.price.unit)}`, price: offer.price.to, per: `/ ${unitNoun(offer.price.unit)}`, featured: false },
+          {
+            label: `3 ${pluralNoun(offer.price.unit)}`,
+            price: midPrice(offer.price.from, offer.price.to),
+            per: `/ ${unitNoun(offer.price.unit)} · free ship`,
+            featured: false,
+          },
+          {
+            label: `6 ${pluralNoun(offer.price.unit)}`,
+            price: offer.price.from,
+            per: `/ ${unitNoun(offer.price.unit)} · free ship + bonuses`,
+            featured: true,
+            bestValueTag: "Best Value",
+          },
+        ];
+  }
+
+  const eyebrow = offer.eyebrow || `Independent Review · Verified ${offer.vendor} Offer`;
 
   return (
     <section className="osl-hero">
-      <div className="osl-eyebrow">Independent Review · Verified {offer.vendor} Offer</div>
+      <div className="osl-eyebrow">{eyebrow}</div>
       <h1>{renderEm(offer.hero.headline)}</h1>
       <p className="osl-hero-sub">{offer.hero.subheadline}</p>
 
@@ -655,7 +668,11 @@ function Hero({ offer }: { offer: Offer }) {
           <div className="osl-stars-row">
             <span className="osl-stars">★★★★★</span>
             <span className="osl-rating-text">
-              <strong>{offer.rating.score.toFixed(1)}/5</strong> · {offer.rating.label}
+              <strong>{offer.rating.score.toFixed(1)}/5</strong>
+              {" · "}
+              {offer.rating.count
+                ? `Based on ${offer.rating.count.toLocaleString()}+ customer reviews`
+                : offer.rating.label}
             </span>
           </div>
         )}
@@ -663,7 +680,9 @@ function Hero({ offer }: { offer: Offer }) {
         <div className="osl-price-row">
           {tiers.map((t, i) => (
             <div key={i} className={`osl-price-badge${t.featured ? " featured" : ""}`}>
-              {t.featured && tiers.length > 1 && <span className="osl-best-tag">Best Value</span>}
+              {t.featured && tiers.length > 1 && (
+                <span className="osl-best-tag">{t.bestValueTag || "Best Value"}</span>
+              )}
               <div className="lbl">{t.label}</div>
               <div className="num">${t.price}</div>
               <div className="per">{t.per}</div>
@@ -718,7 +737,10 @@ function Pain({ offer }: { offer: Offer }) {
 function PainCard({ point }: { point: ProblemPoint }) {
   return (
     <div className="osl-pain-card">
-      <h3>{point.label}</h3>
+      <h3>
+        {point.emoji ? <span style={{ marginRight: 6 }}>{point.emoji}</span> : null}
+        {point.label}
+      </h3>
       <p>{point.description}</p>
     </div>
   );
@@ -773,6 +795,21 @@ function Ingredients({ offer }: { offer: Offer }) {
             <div key={i.name} className="osl-ingredient-card">
               {i.image && <img src={i.image} alt={i.name} loading="lazy" />}
               <div className="osl-ingredient-name">{i.name}</div>
+              {i.dose && (
+                <div
+                  style={{
+                    fontSize: 12,
+                    fontWeight: 700,
+                    color: "var(--osl-gold)",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.06em",
+                    marginTop: 4,
+                    marginBottom: 6,
+                  }}
+                >
+                  {i.dose}
+                </div>
+              )}
               <div className="osl-ingredient-desc">{i.benefit}</div>
             </div>
           ))}
@@ -818,7 +855,24 @@ function Testimonials({ offer }: { offer: Offer }) {
                 <div>
                   <div className="osl-author-name">
                     {t.name}, {t.age}
+                    {t.location && (
+                      <span style={{ color: "var(--osl-text-light)", fontWeight: 400 }}>
+                        {" · "}
+                        {t.location}
+                      </span>
+                    )}
                   </div>
+                  {(t.occupation || t.bottleTier) && (
+                    <div
+                      style={{
+                        fontSize: 12,
+                        color: "var(--osl-text-light)",
+                        marginTop: 2,
+                      }}
+                    >
+                      {[t.occupation, t.bottleTier].filter(Boolean).join(" · ")}
+                    </div>
+                  )}
                   {t.verified && (
                     <span className="osl-verified-badge">✓ Verified Purchase</span>
                   )}

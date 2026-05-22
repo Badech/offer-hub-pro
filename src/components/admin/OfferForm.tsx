@@ -45,6 +45,8 @@ export function emptyOffer(): Offer {
     vendor: "ClickBank",
     productForm: "Gummies",
     seo: { title: "", description: "", ogImage: "" },
+    topBar: { emoji: "🔥", text: "" },
+    eyebrow: "",
     stickyBar: { text: "", ctaLabel: "" },
     trustBadges: {
       guaranteeText: "",
@@ -310,6 +312,22 @@ export function OfferForm({
                 update("rating", {
                   score: offer.rating?.score ?? 0,
                   label: e.target.value,
+                  count: offer.rating?.count,
+                })
+              }
+              className={inputCls}
+            />
+          </Field>
+          <Field label="Rating count (optional — shown as '2,300+ customer reviews')">
+            <input
+              type="number"
+              min={0}
+              value={offer.rating?.count ?? ""}
+              onChange={(e) =>
+                update("rating", {
+                  score: offer.rating?.score ?? 0,
+                  label: offer.rating?.label ?? "",
+                  count: e.target.value ? Number(e.target.value) : undefined,
                 })
               }
               className={inputCls}
@@ -353,6 +371,45 @@ export function OfferForm({
           value={offer.heroImage}
           onChange={(url) => update("heroImage", url)}
         />
+      </Section>
+
+      {/* Top bar + eyebrow (above the hero) */}
+      <Section title="Top Bar & Eyebrow">
+        <Row>
+          <Field label="Top bar emoji (e.g. 🔥)">
+            <input
+              value={offer.topBar?.emoji ?? ""}
+              onChange={(e) =>
+                update("topBar", {
+                  emoji: e.target.value,
+                  text: offer.topBar?.text ?? "",
+                })
+              }
+              className={inputCls}
+            />
+          </Field>
+          <Field label="Top bar text">
+            <input
+              value={offer.topBar?.text ?? ""}
+              onChange={(e) =>
+                update("topBar", {
+                  emoji: offer.topBar?.emoji ?? "🔥",
+                  text: e.target.value,
+                })
+              }
+              className={inputCls}
+              placeholder="LIMITED TIME: 6-Bottle Bundle Now 29% Off — Today Only"
+            />
+          </Field>
+        </Row>
+        <Field label="Eyebrow pill (small text above the hero h1)">
+          <input
+            value={offer.eyebrow ?? ""}
+            onChange={(e) => update("eyebrow", e.target.value)}
+            className={inputCls}
+            placeholder="Independent Review · Verified ClickBank Offer"
+          />
+        </Field>
       </Section>
 
       {/* Sticky bar + trust badges */}
@@ -466,7 +523,7 @@ export function OfferForm({
           renderItem={(p, onUpdate) => (
             <>
               <Row>
-                <Field label="Icon">
+                <Field label="Icon (used when emoji is empty)">
                   <select
                     value={p.icon}
                     onChange={(e) => onUpdate({ ...p, icon: e.target.value })}
@@ -479,14 +536,21 @@ export function OfferForm({
                     ))}
                   </select>
                 </Field>
-                <Field label="Label">
+                <Field label="Emoji (overrides icon, e.g. ⚡)">
                   <input
-                    value={p.label}
-                    onChange={(e) => onUpdate({ ...p, label: e.target.value })}
+                    value={p.emoji ?? ""}
+                    onChange={(e) => onUpdate({ ...p, emoji: e.target.value })}
                     className={inputCls}
                   />
                 </Field>
               </Row>
+              <Field label="Label">
+                <input
+                  value={p.label}
+                  onChange={(e) => onUpdate({ ...p, label: e.target.value })}
+                  className={inputCls}
+                />
+              </Field>
               <Field label="Description">
                 <textarea
                   rows={2}
@@ -530,13 +594,23 @@ export function OfferForm({
           onChange={(ingredients) => update("ingredients", ingredients)}
           renderItem={(it, onUpdate) => (
             <>
-              <Field label="Name">
-                <input
-                  value={it.name}
-                  onChange={(e) => onUpdate({ ...it, name: e.target.value })}
-                  className={inputCls}
-                />
-              </Field>
+              <Row>
+                <Field label="Name">
+                  <input
+                    value={it.name}
+                    onChange={(e) => onUpdate({ ...it, name: e.target.value })}
+                    className={inputCls}
+                  />
+                </Field>
+                <Field label="Dose (optional)">
+                  <input
+                    value={it.dose ?? ""}
+                    onChange={(e) => onUpdate({ ...it, dose: e.target.value })}
+                    className={inputCls}
+                    placeholder="200mg · Standardized 2%"
+                  />
+                </Field>
+              </Row>
               <Field label="Benefit">
                 <textarea
                   rows={2}
@@ -653,6 +727,32 @@ export function OfferForm({
                   className={textareaCls}
                 />
               </Field>
+              <Row>
+                <Field label="Location (optional)">
+                  <input
+                    value={t.location ?? ""}
+                    onChange={(e) => onUpdate({ ...t, location: e.target.value })}
+                    className={inputCls}
+                    placeholder="Dallas, TX"
+                  />
+                </Field>
+                <Field label="Occupation (optional)">
+                  <input
+                    value={t.occupation ?? ""}
+                    onChange={(e) => onUpdate({ ...t, occupation: e.target.value })}
+                    className={inputCls}
+                    placeholder="Construction Manager"
+                  />
+                </Field>
+                <Field label="Bottle tier (optional)">
+                  <input
+                    value={t.bottleTier ?? ""}
+                    onChange={(e) => onUpdate({ ...t, bottleTier: e.target.value })}
+                    className={inputCls}
+                    placeholder="6-bottle customer"
+                  />
+                </Field>
+              </Row>
               <label className="inline-flex items-center gap-2">
                 <input
                   type="checkbox"

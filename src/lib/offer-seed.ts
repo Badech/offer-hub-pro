@@ -12,7 +12,7 @@ const spartamax: Offer = {
   slug: "spartamax",
   title: "Spartamax",
   tagline:
-    "The daily gummy helping men over 40 reclaim their stamina and confidence.",
+    "The daily gummy quietly giving men over 40 their edge back.",
   category: "Health & Wellness",
   tags: ["Male Performance", "Natural", "Gummies", "Testosterone Support"],
   affiliateUrl: SPARTAMAX_AFFILIATE_URL,
@@ -20,7 +20,7 @@ const spartamax: Offer = {
   badge: "Editor's Pick",
   price: { from: 49, to: 69, unit: "per bottle" },
   guarantee: { days: 365, label: "365-Day Money-Back Guarantee" },
-  rating: { score: 4.8, label: "Based on verified buyer reports" },
+  rating: { score: 4.8, label: "Based on 2,300+ customer reviews", count: 2300 },
   featured: true,
   publishedAt: "2026-05-01",
   vendor: "ClickBank",
@@ -29,59 +29,85 @@ const spartamax: Offer = {
     title:
       "Spartamax Review — The Daily Gummy Men Are Talking About (365-Day Guarantee)",
     description:
-      "Spartamax gummies support stamina, blood flow, and confidence naturally. 7 clinically studied ingredients. Risk-free with a 365-day money-back guarantee.",
+      "Spartamax combines 7 clinically studied ingredients — Tongkat Ali, Ashwagandha & Maca Root among them — to support stamina, blood flow, and confidence. 365-day money-back guarantee.",
     ogImage: "",
   },
+  topBar: {
+    emoji: "🔥",
+    text: "LIMITED TIME: 6-Bottle Bundle Now 29% Off + 2 Free Guides — Today Only",
+  },
+  eyebrow: "Independent Review · Verified ClickBank Offer",
   stickyBar: {
     text: "365-Day Risk-Free Guarantee — Try Spartamax With Zero Risk",
     ctaLabel: "Get Spartamax →",
   },
   trustBadges: {
-    guaranteeText: "365-Day Money Back",
+    guaranteeText: "365-Day Guarantee",
     shippingText: "Free US Shipping (3+)",
     vendorVerifiedText: "ClickBank Verified",
     manufacturingText: "FDA-Registered Facility",
   },
+  pricingTiers: [
+    { label: "1 Bottle", price: 69, per: "/ bottle", featured: false },
+    { label: "3 Bottles", price: 59, per: "/ bottle · free ship", featured: false },
+    {
+      label: "6 Bottles",
+      price: 49,
+      per: "/ bottle · free ship + bonuses",
+      featured: true,
+      bestValueTag: "Best Value",
+    },
+  ],
   hero: {
-    headline:
-      "The Daily Gummy Helping Men Over 40 Feel Like Themselves Again",
+    headline: "The Daily Gummy Quietly Giving Men Over 40 Their Edge Back",
     subheadline:
-      "Spartamax combines 7 research-backed ingredients — including Tongkat Ali, Ashwagandha, and Maca Root — to support stamina, blood flow, and confidence naturally.",
-    ctaLabel: "Claim Your Discounted Spartamax →",
+      "Spartamax combines 7 clinically studied ingredients — including Tongkat Ali, Ashwagandha & Maca Root — to support stamina, blood flow, and confidence. One gummy with your morning coffee.",
+    ctaLabel: "✦ Yes — I Want My Stamina Back",
   },
   problem: {
-    heading: "Modern Life Is Quietly Draining Men's Vitality",
+    heading: "Sound Familiar?",
     points: [
       {
         icon: "BatteryLow",
-        label: "Chronic fatigue",
-        description: "Energy crashes that hit by mid-afternoon.",
+        emoji: "⚡",
+        label: "Energy crashes by 2pm",
+        description:
+          "Mid-afternoon fatigue that no amount of coffee fixes. You used to power through the whole day.",
       },
       {
         icon: "Activity",
-        label: "Low stamina",
-        description: "Less endurance in the gym and in the bedroom.",
-      },
-      {
-        icon: "TrendingDown",
-        label: "Reduced drive",
-        description: "That competitive edge you used to have feels gone.",
-      },
-      {
-        icon: "Droplets",
-        label: "Poor circulation",
+        emoji: "💪",
+        label: "Gym performance is down",
         description:
-          "Sluggish blood flow affects performance more than most men realize.",
-      },
-      {
-        icon: "Brain",
-        label: "Brain fog",
-        description: "Difficulty staying sharp and focused throughout the day.",
+          "The drive to train hard just isn't there. Recovery takes longer. Gains have stalled.",
       },
       {
         icon: "HeartCrack",
-        label: "Low confidence",
-        description: "The psychological spiral that follows physical decline.",
+        emoji: "🛏",
+        label: "Drive has gone quiet",
+        description:
+          "Less interest in intimacy than you used to have. Your partner has noticed. You definitely have.",
+      },
+      {
+        icon: "Brain",
+        emoji: "🧠",
+        label: "Brain fog at work",
+        description:
+          "Struggling to stay sharp in meetings. The mental edge you relied on isn't showing up.",
+      },
+      {
+        icon: "TrendingDown",
+        emoji: "😤",
+        label: "Low patience, low mood",
+        description:
+          "Irritable for no clear reason. The psychological toll of feeling \"off\" adds up fast.",
+      },
+      {
+        icon: "Droplets",
+        emoji: "🩸",
+        label: "Sluggish circulation",
+        description:
+          "Poor blood flow affects everything from workout pumps to bedroom performance. It's all connected.",
       },
     ],
   },
@@ -91,45 +117,54 @@ const spartamax: Offer = {
   },
   ingredients: [
     {
-      name: "L-Arginine",
-      benefit:
-        "Precursor to nitric oxide. Supports healthy blood flow and circulation, which is foundational for physical performance.",
-    },
-    {
       name: "Tongkat Ali",
+      dose: "200mg · Standardized 2%",
       benefit:
-        "Used for centuries in Southeast Asian traditional medicine. Studied for its ability to support healthy testosterone levels and libido.",
-    },
-    {
-      name: "Maca Root",
-      benefit:
-        "Andean root used by Incan warriors. Associated with increased energy, stamina, and sexual function in multiple studies.",
+        "Southeast Asian herb used for centuries. Multiple double-blind studies show support for healthy testosterone levels and libido in men over 40.",
     },
     {
       name: "Ashwagandha",
+      dose: "300mg · KSM-66 Form",
       benefit:
-        "Adaptogenic herb clinically studied for stress reduction. Lower cortisol directly supports better hormonal balance and drive.",
+        "Adaptogen proven to lower cortisol by up to 27% in clinical trials. Lower cortisol = better hormonal balance, deeper sleep, more drive.",
+    },
+    {
+      name: "Maca Root",
+      dose: "500mg · Black Maca",
+      benefit:
+        "Incan warrior fuel. Studied for energy, endurance, and sexual function. One of the most replicated herbal compounds for male performance.",
+    },
+    {
+      name: "L-Arginine",
+      dose: "600mg",
+      benefit:
+        "Precursor to nitric oxide. Converts to NO in the body, dilating blood vessels and improving circulation to muscles and vital areas.",
     },
     {
       name: "Horny Goat Weed",
+      dose: "250mg · 10% Icariin",
       benefit:
-        "Contains icariin, a compound that supports blood flow by inhibiting PDE5 — the same mechanism as pharmaceutical options.",
+        "Contains icariin, which inhibits PDE5 — the same mechanism targeted by prescription ED medications. Works naturally at the source.",
     },
     {
       name: "Beet Root",
+      dose: "400mg",
       benefit:
-        "High in dietary nitrates that convert to nitric oxide. Supports endurance, blood pressure, and circulation.",
+        "High in natural nitrates that boost nitric oxide production. Clinically shown to improve exercise endurance and lower blood pressure.",
     },
     {
       name: "Grape Seed Extract",
+      dose: "150mg · 95% OPCs",
       benefit:
-        "Rich in OPCs (oligomeric proanthocyanidins). Supports vascular health and antioxidant protection.",
+        "Powerful antioxidant that protects blood vessels, reduces oxidative stress, and amplifies the effects of the nitric oxide ingredients.",
     },
   ],
   beforeAfter: [
-    { before: "Dragging through the day", after: "Consistent energy from morning to night" },
-    { before: "Avoiding the gym and intimacy", after: "Back to performing at my best" },
-    { before: "Frustrated and off my game", after: "Confident, driven, and motivated" },
+    { before: "Dragging through the afternoon", after: "Consistent energy morning to night" },
+    { before: "Avoiding the gym, skipping workouts", after: "Back in the gym, stronger sessions" },
+    { before: "Low libido, low confidence", after: "Drive and confidence return naturally" },
+    { before: "Foggy, unfocused at work", after: "Mentally sharp, present, in control" },
+    { before: "Feeling older than your actual age", after: "Feeling like yourself again" },
   ],
   testimonials: [
     {
@@ -138,8 +173,11 @@ const spartamax: Offer = {
       initials: "JM",
       rating: 5,
       quote:
-        "I was skeptical because I'd tried other stuff before. But after about three weeks of taking Spartamax every morning, I genuinely noticed more energy and a lot more confidence. My wife noticed too.",
+        "I was skeptical because I'd tried other stuff before. But after about three weeks of taking Spartamax every morning, I genuinely noticed more energy and a lot more confidence in the bedroom. My wife noticed too.",
       verified: true,
+      location: "Dallas, TX",
+      occupation: "Construction Manager",
+      bottleTier: "6-bottle customer",
     },
     {
       name: "Eric T.",
@@ -147,48 +185,49 @@ const spartamax: Offer = {
       initials: "ET",
       rating: 5,
       quote:
-        "The gummies made it easy — I just take one with my coffee. More stamina at the gym, and I just feel sharper during the day. Solid product.",
+        "The gummy format made it a habit I actually stick with. I just take one with my morning coffee. Noticed more stamina at the gym, and I feel sharper during the day. Solid product — will keep buying.",
       verified: true,
+      location: "Phoenix, AZ",
+      occupation: "Project Director",
+      bottleTier: "3-bottle customer",
     },
     {
       name: "Daniel R.",
       age: 47,
       initials: "DR",
-      rating: 4,
+      rating: 5,
       quote:
-        "Took about 3–4 weeks to really feel a difference. Energy came back first, then the drive. Wish I'd started sooner honestly.",
+        "Took about 3–4 weeks to really feel a difference. Energy came back first, then everything else followed. I feel like I'm 35 again at 47. Wish I'd started sooner honestly. Best supplement I've tried.",
       verified: true,
+      location: "Chicago, IL",
+      occupation: "Sales Executive",
+      bottleTier: "6-bottle customer",
     },
   ],
   faq: [
     {
-      question: "Is this actually a gummy?",
+      question: "How long before I notice results?",
       answer:
-        "Yes. Spartamax comes as a chewable gummy, not a capsule or pill. Take one daily, preferably in the morning.",
+        "Most men report a noticeable difference in energy and drive within 2–4 weeks of daily use. For full results, the recommended duration is 90 days — which is why the 6-bottle bundle is most popular.",
     },
     {
-      question: "How long until I notice results?",
+      question: "Is this actually a gummy? Why not a pill?",
       answer:
-        "Most men report noticing a difference in energy and drive within 2–4 weeks of consistent daily use. For full results, the vendor recommends at least 90 days.",
+        "Yes, it's a chewable gummy. The format matters — research shows gummies have significantly better adherence than pill stacks. You'll actually remember to take it daily because it's pleasant, not a chore.",
     },
     {
-      question: "What's the price?",
+      question: "What's the best value option?",
       answer:
-        "A single bottle (1-month supply) is $69 + shipping. Three bottles drop to $59/bottle with free US shipping. Six bottles are $49/bottle with free US shipping and 2 bonus digital guides.",
+        "The 6-bottle bundle at $49/bottle is the best deal — you get free US shipping, 2 bonus digital guides, and enough supply for a full 6-month run. Most men who see results order this the second time.",
     },
     {
-      question: "Is there a guarantee?",
+      question: "What if it doesn't work for me?",
       answer:
-        "Yes — 365 days. The longest guarantee I've seen on a supplement. If it doesn't work for you, contact ClickBank for a full refund, no questions asked.",
-    },
-    {
-      question: "Who is this for?",
-      answer:
-        "Men 35–65 who want to support stamina, energy, circulation, and confidence naturally, without prescription medications.",
+        "You contact ClickBank — Spartamax's payment processor — and request a full refund. No forms, no return required. They process it within 5 business days. The 365-day window means you can literally try it for a year.",
     },
   ],
   footerDisclosure:
-    "OfferSendly may earn a commission on purchases made through links on this page, at no extra cost to you. This page is not affiliated with or endorsed by Spartamax's manufacturer. Results vary. These statements have not been evaluated by the FDA.",
+    "OfferSendly may earn a commission on purchases made through links on this page, at no extra cost to you. This page is not affiliated with or endorsed by Spartamax's manufacturer. Individual results vary. These statements have not been evaluated by the FDA. This product is not intended to diagnose, treat, cure, or prevent any disease.",
 };
 
 const ironforge: Offer = {

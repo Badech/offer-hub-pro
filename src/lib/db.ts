@@ -51,7 +51,41 @@ export async function ensureSchemaAndSeed(): Promise<void> {
       await insertOfferRow(offer);
     }
   }
+
+  // One-time migration: re-apply the Spartamax seed if its payload doesn't yet
+  // include the new `topBar` field (introduced when the landing template was
+  // redesigned). Idempotent — runs at most once per cold start, and the check
+  // is a fast indexed lookup. Older offers that the admin has edited are left
+  // alone.
+  await applyRichSpartamaxMigration();
   initialized = true;
+}
+
+async function applyRichSpartamaxMigration(): Promise<void> {
+  const sql = getSql();
+  const rows = (await sql`
+    SELECT slug, payload FROM offers
+    WHERE slug = 'spartamax' AND (payload->'topBar') IS NULL
+    LIMIT 1;
+  `) as Array<{ slug: string }>;
+  if (rows.length === 0) return; // already migrated, or admin has customised it
+
+  const { SEED_OFFERS } = await import("./offer-seed");
+  const spartamax = SEED_OFFERS.find((o) => o.slug === "spartamax");
+  if (!spartamax) return;
+
+  await sql`
+    UPDATE offers
+    SET title = ${spartamax.title},
+        tagline = ${spartamax.tagline},
+        category = ${spartamax.category},
+        affiliate_url = ${spartamax.affiliateUrl},
+        featured = ${spartamax.featured},
+        published_at = ${spartamax.publishedAt},
+        payload = ${JSON.stringify(spartamax)}::jsonb,
+        updated_at = NOW()
+    WHERE slug = 'spartamax';
+  `;
 }
 
 async function insertOfferRow(offer: Offer): Promise<void> {
