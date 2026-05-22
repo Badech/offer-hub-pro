@@ -187,6 +187,106 @@ function parseDoc(markdown: string): Doc {
       continue;
     }
 
+    // Skip blank lines unless we're inside a field — they terminate the
+    // field's body without consuming any text.
+    if (line.trim() === "") {
+      if (ctx.field) flushField();
+      continue;
+    }
+
+    // ── Plain-text PARSING (no `#` or `**` markers needed) ───────────────
+    //
+    // Some briefs use a totally markup-free format:
+    //
+    //   BASICS                ← all-caps section header
+    //   Title:                ← bare "Key:" — value on next line
+    //   Java Burn
+    //   Affiliate URL: https://...   ← inline "Key: value"
+    //
+    //   PROBLEM SECTION
+    //   Problem Point 1       ← item header without "#"
+    //   Icon: TrendingDown
+    //   Label: Your Metabolism …
+    //   Description:
+    //   When your metabolism …
+    //
+    // We try these patterns BEFORE the heading regex so they take priority.
+
+    // (a) all-caps section header — a standalone line of letters/digits/
+    //     spaces/punctuation that's >= 4 chars and at least 60% uppercase.
+    //     Lines containing ":" never qualify (those are field labels).
+    if (
+      !line.includes(":") &&
+      line.length >= 4 &&
+      line.length <= 60 &&
+      /^[A-Z0-9][A-Z0-9&\s/().\-–—]+$/.test(line.trim())
+    ) {
+      const sectionText = line.trim();
+      const isKnownPlain =
+        /^(basics|pricing(?:\s+(?:and|&)\s+trust)?|hero(?:\s+section)?|top\s+bar(?:\s+(?:and|&)\s+eyebrow)?|sticky\s+bar(?:\s+(?:and|&)\s+trust\s+badges)?|problem(?:\s+section)?|solution(?:\s+section)?|ingredients?(?:\s+(?:slash|or|\/)\s+features?(?:\s+section)?)?|features?(?:\s+section)?|before\s*(?:slash|\/)\s*after|testimonials?(?:\s+section)?|reviews?(?:\s+section)?|faq(?:s)?(?:\s+section)?|seo(?:\s+(?:and|&)\s+disclosure)?)$/i.test(
+          sectionText.replace(/\s+/g, " "),
+        );
+      if (isKnownPlain) {
+        flushField();
+        ctx.item = null;
+        ctx.itemType = null;
+        const sn = normaliseKey(sectionText).replace(/_section$/, "");
+        ctx.section =
+          sn.match(
+            /^(basics|pricing|hero|sticky|top|seo|problem|solution|ingredients?|features?|before|testimonials?|reviews?|faq)/,
+          )?.[1] ?? sn;
+        ctx.section = ctx.section
+          .replace(/^ingredients$/, "ingredient")
+          .replace(/^features?$/, "ingredient")
+          .replace(/^reviews?$/, "testimonial")
+          .replace(/^top$/, "topbar");
+        continue;
+      }
+    }
+
+    // (b) plain-text item header — "Problem Point 1", "Ingredient 1",
+    //     "Testimonial 1", "FAQ 1", etc. without any "#" or "**".
+    if (!line.includes(":")) {
+      const plainItem = detectItem(line.trim());
+      if (plainItem) {
+        startItem(plainItem.type, plainItem.index);
+        continue;
+      }
+    }
+
+    // (c) bare "Key:" or "Key: value" field pair (no bold markers).
+    //
+    // IMPORTANT: only attempt this when we're NOT currently capturing a
+    // field body that's still empty. Otherwise a line like
+    //   Text:
+    //   LIMITED TIME: Over 80% Off Today
+    // would mistake "LIMITED TIME" as a NEW field and discard the actual
+    // value. The "buffer empty" check means: if we just opened a field and
+    // haven't seen its value yet, the next text line IS the value — even
+    // if that text contains a colon.
+    //
+    // Additionally, the label must:
+    //   - Start with a capital
+    //   - Be short (≤ 40 chars)
+    //   - Contain only letters/digits/spaces/&/-/–
+    //   - Not contain ! ? ' " ( ) % — these mark sentences, not labels
+    const isAwaitingFieldValue =
+      ctx.field !== null && ctx.field.buffer.length === 0;
+    const plainKv = !isAwaitingFieldValue
+      ? line.match(/^([A-Z][A-Za-z0-9 /&\-]{1,40}?)\s*:\s*(.*)$/)
+      : null;
+    if (plainKv) {
+      const labelText = plainKv[1].trim();
+      const sameLineValue = plainKv[2].trim();
+      const bucket: Bucket = ctx.item ? ctx.item.fields : doc.fields;
+      const fieldKey = normaliseKey(labelText);
+      const keys = [fieldKey];
+      if (ctx.section && !ctx.item) keys.push(`${ctx.section}__${fieldKey}`);
+      startField(bucket, keys);
+      if (sameLineValue) ctx.field!.buffer.push(sameLineValue);
+      continue;
+    }
+
     // Bold-label key/value pairs:
     //   "**Title:** Prostadine"             (value on same line)
     //   "**Title:**\nProstadine"            (value on next line)
@@ -512,13 +612,26 @@ export function parseOfferBrief(markdown: string): Offer {
       quote = stripQuotes(quote);
 
       const rating = Math.max(1, Math.min(5, Math.round(ratingRaw ?? 5))) as Tm["rating"];
+      // Optional sub-fields the brief may include.
+      const location = take(it.fields, "location", "city");
+      const occupation = take(it.fields, "occupation", "job", "title");
+      const bottleTier = take(it.fields, "bottle_tier", "tier", "package");
+      // Verified: accept "Yes", checkmark "✅", "✓", or "True". Defaults to
+      // true (which matches our existing behaviour and the visual norm).
+      const verifiedRaw = take(it.fields, "verified");
+      const verified = verifiedRaw
+        ? /^(yes|true|\u2713|\u2705|verified|y)/i.test(verifiedRaw.trim())
+        : true;
       return {
         name,
         age: age || 40,
         initials: initials(name),
         rating,
         quote,
-        verified: true,
+        verified,
+        ...(location ? { location } : {}),
+        ...(occupation ? { occupation } : {}),
+        ...(bottleTier ? { bottleTier } : {}),
       };
     })
     .filter((t) => t.name || t.quote);
@@ -561,6 +674,9 @@ export function parseOfferBrief(markdown: string): Offer {
     rating: {
       score: takeNumber(F, "rating_score") ?? 4.8,
       label: take(F, "rating_label") ?? "Based on verified customer experiences",
+      // Brief value can be a free-form string like "2,300+ customer reviews"
+      // — takeNumber strips non-digits, so "2300" survives.
+      count: takeNumber(F, "rating_count", "review_count"),
     },
     featured: takeBool(F, "featured") ?? false,
     publishedAt:
@@ -574,7 +690,7 @@ export function parseOfferBrief(markdown: string): Offer {
     },
     stickyBar: {
       text: take(F, "sticky_bar_text") ?? "",
-      ctaLabel: take(F, "sticky_bar_cta") ?? "",
+      ctaLabel: take(F, "sticky_bar_cta", "sticky_bar_cta_label") ?? "",
     },
     trustBadges: {
       guaranteeText: take(F, "trust_guarantee_text") ?? "",
@@ -582,6 +698,27 @@ export function parseOfferBrief(markdown: string): Offer {
       vendorVerifiedText: take(F, "trust_vendor_verified_text") ?? "",
       manufacturingText: take(F, "trust_manufacturing_text") ?? "",
     },
+    // Top bar (urgency strip above the hero). Optional — only emitted when
+    // the brief actually populated at least one of the fields.
+    topBar: take(F, "top_bar_text", "topbar__top_bar_text")
+      ? {
+          emoji: take(F, "top_bar_emoji", "topbar__top_bar_emoji") ?? "🔥",
+          text:
+            take(F, "top_bar_text", "topbar__top_bar_text") ?? "",
+        }
+      : undefined,
+    // Eyebrow pill. Multiple alias keys to accommodate variant brief formats:
+    // "Eyebrow", "Eyebrow Pill Text", "Eyebrow Text".
+    eyebrow:
+      take(
+        F,
+        "eyebrow",
+        "eyebrow_pill_text",
+        "eyebrow_text",
+        "topbar__eyebrow",
+        "topbar__eyebrow_pill_text",
+        "topbar__eyebrow_text",
+      ) ?? undefined,
     hero: {
       headline: take(F, "headline") ?? "",
       subheadline: take(F, "subheadline") ?? "",
