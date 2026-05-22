@@ -1017,18 +1017,66 @@ function StickyMobileCTA({ offer }: { offer: Offer }) {
 }
 
 // ────────────────────────────────────────────────────────────────────────────
-// Client-only urgency countdown — 3h 47m 22s by default, ticks down each
-// second. Resets on every page load (it's a urgency device, not a real
-// deadline). Mounted as a useEffect-driven component so SSR renders the
-// initial values and hydration doesn't flicker.
+// Client-only urgency countdown — 3h 47m 22s window persisted in
+// localStorage so a refresh continues from where it left off instead of
+// snapping back to the start (which exposes the timer as fake). When the
+// window expires, a fresh 3h47m22s deadline is set so the strip stays
+// visible and ticking.
+//
+// SSR-friendly: the first render uses the static initial value (which makes
+// the React tree deterministic for hydration), then useEffect swaps in the
+// localStorage-backed value on the next tick. Brief flash of "03:47:22" is
+// invisible at typical paint speeds.
 // ────────────────────────────────────────────────────────────────────────────
 
+const COUNTDOWN_WINDOW_SECS = 3 * 3600 + 47 * 60 + 22; // 3h 47m 22s
+const COUNTDOWN_STORAGE_KEY = "osl_countdown_deadline";
+
 function UrgencyCountdown() {
-  const [secs, setSecs] = useState(3 * 3600 + 47 * 60 + 22);
+  const [secs, setSecs] = useState(COUNTDOWN_WINDOW_SECS);
+
   useEffect(() => {
-    const id = setInterval(() => setSecs((s) => (s > 0 ? s - 1 : 0)), 1000);
+    // Resolve the persisted deadline, or create one.
+    const now = Date.now();
+    let deadline = 0;
+    try {
+      const raw = localStorage.getItem(COUNTDOWN_STORAGE_KEY);
+      if (raw) deadline = Number(raw);
+    } catch {
+      // localStorage unavailable (private mode, blocked, etc.) — fall through
+      // to a non-persisted countdown using the default window.
+    }
+    if (!deadline || Number.isNaN(deadline) || deadline <= now) {
+      // First visit, expired window, or corrupt value — start a fresh window.
+      deadline = now + COUNTDOWN_WINDOW_SECS * 1000;
+      try {
+        localStorage.setItem(COUNTDOWN_STORAGE_KEY, String(deadline));
+      } catch {
+        // Best-effort persistence; ignore failure.
+      }
+    }
+
+    const tick = () => {
+      const remaining = Math.max(0, Math.floor((deadline - Date.now()) / 1000));
+      if (remaining === 0) {
+        // Window elapsed — roll a new one so the page never shows 00:00:00
+        // (which would look broken / dead).
+        deadline = Date.now() + COUNTDOWN_WINDOW_SECS * 1000;
+        try {
+          localStorage.setItem(COUNTDOWN_STORAGE_KEY, String(deadline));
+        } catch {
+          // ignore
+        }
+        setSecs(COUNTDOWN_WINDOW_SECS);
+      } else {
+        setSecs(remaining);
+      }
+    };
+    tick(); // run once immediately so first render shows the right value
+    const id = setInterval(tick, 1000);
     return () => clearInterval(id);
   }, []);
+
   const h = Math.floor(secs / 3600);
   const m = Math.floor((secs % 3600) / 60);
   const s = secs % 60;
