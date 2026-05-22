@@ -490,13 +490,27 @@ export function parseOfferBrief(markdown: string): Offer {
   // Two formats: (a) explicit `# Problem Point N` items with Icon/Label/
   // Description sub-fields, or (b) a bullet list under "## Problem Points"
   // at the doc level.
+  //
+  // The brief may supply the icon as either a lucide name ("TrendingDown")
+  // or a literal emoji ("📉"). When the value is an emoji (any non-ASCII
+  // character), we treat it as the visual emoji and fall back to a sensible
+  // default lucide name — the template uses emoji when set, lucide icon
+  // otherwise.
   const explicitProblemItems = sortedItems(doc.items.get("problem_point"));
   let problemPoints = explicitProblemItems
-    .map((it) => ({
-      icon: take(it.fields, "icon") || "TrendingDown",
-      label: take(it.fields, "label") || "",
-      description: take(it.fields, "description") || it.body.trim() || "",
-    }))
+    .map((it) => {
+      const iconRaw = take(it.fields, "icon") || "";
+      const emojiField = take(it.fields, "emoji");
+      const iconIsEmoji = iconRaw && /[^\u0000-\u007F]/.test(iconRaw);
+      return {
+        icon: iconIsEmoji ? "TrendingDown" : iconRaw || "TrendingDown",
+        ...(iconIsEmoji || emojiField
+          ? { emoji: emojiField || iconRaw }
+          : {}),
+        label: take(it.fields, "label") || "",
+        description: take(it.fields, "description") || it.body.trim() || "",
+      };
+    })
     .filter((p) => p.label || p.description);
   if (problemPoints.length === 0) {
     problemPoints = takeBullets(F, "problem_points").map((label) => ({
