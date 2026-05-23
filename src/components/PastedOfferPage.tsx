@@ -25,6 +25,21 @@ export function PastedOfferPage({ offer }: { offer: Offer }) {
   return (
     <>
       {styles && <style dangerouslySetInnerHTML={{ __html: styles }} />}
+      {/*
+        OVERRIDE STYLE — applied AFTER the pasted <style> so it wins the
+        specificity tie. Pasted briefs sometimes set:
+          html, body { height: 100%; overflow: hidden; }
+        which clips everything below the first viewport — including our
+        appended footer. Resetting these two properties guarantees the
+        footer is always visible without disturbing the pasted CSS
+        otherwise (it still owns colours, fonts, layout, etc.).
+      */}
+      <style>{`
+        html, body {
+          height: auto !important;
+          overflow: visible !important;
+        }
+      `}</style>
       <div
         // The pasted HTML is admin-authored content — we trust it by design,
         // since only the authenticated /admin user can paste it.

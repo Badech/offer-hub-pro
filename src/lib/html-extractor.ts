@@ -128,10 +128,28 @@ function replaceImagePlaceholder(body: string, imageUrl: string, affiliateUrl: s
   if (!imageUrl) return body.replace(IMAGE_PLACEHOLDER_RE, "");
   const safeImg = escapeAttr(imageUrl);
   const safeAff = escapeAttr(affiliateUrl || "#");
-  // If no affiliate URL is set, render the image without a wrapping link.
+
+  // Render the image at its natural intrinsic dimensions (no max-width
+  // constraint, no border-radius, no auto-scaling). The image is centered
+  // horizontally via text-align on the wrapper; the image itself uses
+  // `width: auto; height: auto;` so the browser falls back to the image's
+  // own width/height attributes once it loads.
+  //
+  // On viewports narrower than the image, browsers will let it overflow
+  // horizontally — which is the explicit intent ("original size ratio"
+  // = original dimensions). If you ever need responsive scaling per
+  // image, swap to max-width:100% on a case-by-case basis.
+  const imgStyle =
+    "width:auto;height:auto;display:inline-block;cursor:pointer;border:0;";
+  const wrapperStyle =
+    "display:block;text-align:center;margin:24px auto;line-height:0;";
+
   const html = affiliateUrl
-    ? `<a href="${safeAff}" target="_blank" rel="noopener sponsored" style="display:block;text-align:center;margin:24px auto;"><img src="${safeImg}" alt="" style="max-width:100%;height:auto;border-radius:8px;display:inline-block;cursor:pointer;"/></a>`
-    : `<div style="text-align:center;margin:24px auto;"><img src="${safeImg}" alt="" style="max-width:100%;height:auto;border-radius:8px;display:inline-block;"/></div>`;
+    ? `<a href="${safeAff}" target="_blank" rel="noopener sponsored" style="${wrapperStyle}"><img src="${safeImg}" alt="" style="${imgStyle}"/></a>`
+    : `<div style="${wrapperStyle}"><img src="${safeImg}" alt="" style="${imgStyle.replace(
+        "cursor:pointer;",
+        "",
+      )}"/></div>`;
   return body.replace(IMAGE_PLACEHOLDER_RE, html);
 }
 
