@@ -101,15 +101,6 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         href: "https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,700;0,900;1,700;1,900&family=DM+Sans:wght@400;500;600;700&display=swap",
       },
     ],
-    // Meta (Facebook) Pixel — standard Meta-supplied snippet. Lives in the
-    // <head> via TanStack Start's `scripts` array so it runs on every page,
-    // before the rest of the app boots. The <noscript> img fallback for
-    // users without JS lives in RootShell below.
-    scripts: [
-      {
-        children: `!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');fbq('init','1649617766249563');fbq('track','PageView');`,
-      },
-    ],
   }),
   shellComponent: RootShell,
   component: RootComponent,
@@ -117,17 +108,35 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   errorComponent: ErrorComponent,
 });
 
-// Meta Pixel noscript fallback URL. Defined as a constant because the
-// raw `&` characters in the query string trip up some JSX parsers when
-// inlined as attribute text.
-const META_PIXEL_NOSCRIPT_SRC =
-  "https://www.facebook.com/tr?id=1649617766249563&ev=PageView&noscript=1";
+// Meta Pixel ID. If you ever rotate it, change it here and nowhere else.
+const META_PIXEL_ID = "1649617766249563";
+
+// Meta-supplied Pixel snippet. Rendered directly into <head> via
+// dangerouslySetInnerHTML so Meta Pixel Helper and Meta's crawler can
+// detect it — TanStack's head().scripts puts inline scripts at the bottom
+// of <body>, which Meta's tooling doesn't scan.
+const META_PIXEL_SCRIPT = `!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');fbq('init','${META_PIXEL_ID}');fbq('track','PageView');`;
+
+// Meta Pixel noscript fallback URL — `&` characters in the query string
+// trip up some JSX parsers when inlined as attribute text, so we bind it
+// to a constant first.
+const META_PIXEL_NOSCRIPT_SRC = `https://www.facebook.com/tr?id=${META_PIXEL_ID}&ev=PageView&noscript=1`;
 
 function RootShell({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <head>
         <HeadContent />
+        {/*
+          Meta Pixel base code MUST live in <head> (Meta's spec + their
+          detection tooling looks here, not in <body>). dangerouslySetInnerHTML
+          is the only way to inject an inline <script> that runs before
+          hydration in TanStack Start.
+        */}
+        <script
+          // eslint-disable-next-line react/no-danger
+          dangerouslySetInnerHTML={{ __html: META_PIXEL_SCRIPT }}
+        />
       </head>
       <body>
         {/*
