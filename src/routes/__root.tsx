@@ -69,6 +69,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:site_name", content: "OfferSendly" },
       { property: "og:url", content: "https://offersendly.com/" },
       { name: "twitter:card", content: "summary_large_image" },
+      // Meta (Facebook) Business domain ownership verification. Required on
+      // every page so the crawler can hit any URL and find it.
+      {
+        name: "facebook-domain-verification",
+        content: "9odni0rlx7hf6pryalzo1cr88wnr9g",
+      },
       { name: "twitter:site", content: "@offersendly" },
       { name: "twitter:title", content: "OfferSendly — Curated offers. Honest reviews." },
       {
