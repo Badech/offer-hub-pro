@@ -47,10 +47,17 @@ function AdminOffersList() {
                 <td className="px-5 py-3 text-[var(--text-secondary)] font-mono text-[12px]">{o.slug}</td>
                 <td className="px-5 py-3 text-right whitespace-nowrap">
                   <Link
+                    to="/admin/offers/$slug/edit"
+                    params={{ slug: o.slug }}
+                    className="text-[var(--accent)] font-medium hover:underline mr-4"
+                  >
+                    Edit
+                  </Link>
+                  <Link
                     to="/offers/$slug"
                     params={{ slug: o.slug }}
                     target="_blank"
-                    className="text-[var(--accent)] font-medium hover:underline mr-4"
+                    className="text-[var(--text-secondary)] hover:underline mr-4"
                   >
                     View
                   </Link>
