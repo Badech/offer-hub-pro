@@ -387,4 +387,89 @@ const focusforge: Offer = {
   footerDisclosure: "",
 };
 
-export const SEED_OFFERS: Offer[] = [spartamax, ironforge, wealthcompass, lumea, focusforge];
+// ────────────────────────────────────────────────────────────────────────────
+// WaterSmartBox — pre-sell traffic offer. Includes a full PresellSchema
+// block; visiting /offers/watersmart-box renders the standard landing
+// template, /presell/watersmart-box renders the dark advertorial.
+// ────────────────────────────────────────────────────────────────────────────
+
+const WATERSMARTBOX_HOPLINK = "https://ad8fc2j6r5w-u99hedrc6xau8e.hop.clickbank.net";
+
+const watersmartbox: Offer = {
+  slug: "watersmart-box",
+  title: "WaterSmartBox",
+  tagline:
+    "Be water-independent in any crisis — without expensive systems or complicated setup.",
+  category: "Survival & Preparedness",
+  tags: ["Water", "Preparedness", "Off-Grid", "Survival", "Home"],
+  affiliateUrl: WATERSMARTBOX_HOPLINK,
+  heroImage: "",
+  badge: "Featured",
+  price: { from: 39, to: 89, unit: "per package" },
+  guarantee: { days: 60, label: "60-Day Money-Back Guarantee" },
+  rating: { score: 4.7, label: "Based on verified buyer reports" },
+  featured: true,
+  publishedAt: "2026-05-23",
+  vendor: "ClickBank",
+  productForm: "Digital Guide + System",
+  seo: {
+    title: "WaterSmartBox — Become Water-Independent for Any Crisis",
+    description:
+      "WaterSmartBox is the simple system thousands are using to slash water bills and stay prepared for any crisis. 60-day money-back guarantee.",
+    ogImage: "",
+  },
+  topBar: { emoji: "🔥", text: "60-DAY GUARANTEE — Try WaterSmartBox Risk-Free" },
+  eyebrow: "Independent Review · Verified ClickBank Offer",
+  stickyBar: { text: "60-Day Risk-Free Guarantee", ctaLabel: "Get WaterSmartBox →" },
+  trustBadges: {
+    guaranteeText: "60-Day Guarantee",
+    shippingText: "Instant Digital Access",
+    vendorVerifiedText: "ClickBank Verified",
+    manufacturingText: "USA Based Support",
+  },
+  hero: {
+    headline: "Become Water-Independent — Without Expensive Systems",
+    subheadline:
+      "A simple step-by-step system thousands of families are using to take control of their water supply, slash recurring costs, and stay prepared for whatever comes next.",
+    ctaLabel: "Get WaterSmartBox →",
+  },
+  problem: { heading: "", points: [] },
+  solution: { heading: "", body: "" },
+  ingredients: [],
+  beforeAfter: [],
+  testimonials: [],
+  faq: [],
+  footerDisclosure:
+    "This page contains affiliate links. We may earn a commission at no extra cost to you. WaterSmartBox is sold by an independent vendor on the ClickBank platform.",
+  presell: {
+    topBarPrefix: "⚠",
+    topBarSpan: "CLASSIFIED:",
+    topBarText: "This file may be scrubbed — view before it disappears",
+    eyebrowLabel: "Confidential leak — eyes only",
+    headlineLead: "[LEAKED]",
+    headlineMain: "NASA's Secret",
+    headlineTail: "Shakes the White House",
+    heroImage: "",
+    heroIcon: "🛸",
+    heroCaption: "Classified File — Surfaced Online",
+    bodyCopy:
+      "*This message is for your eyes only.*\nWhat you're about to see could create shockwaves across the country once it reaches the public. You are one of the few lucky patriots — [WATCH THIS IMMEDIATELY.](inline-cta) Early this morning, a confidential file surfaced online. No one knows how it got out — but its contents are… **explosive.** The silence from officials speaks volumes.",
+    alertText:
+      "Rumor has it, industry lawyers are already moving to take this down. Thousands have already seen it —",
+    alertLinkLabel: "it's all right here.",
+    ctaLabel: "▶  WATCH THIS IMMEDIATELY",
+    ctaSub: "Free to watch · No sign-up required · May be removed soon",
+    importantLabel: "IMPORTANT:",
+    importantText:
+      "If you've ever wanted to be water-independent, slash your bills, or be prepared for any crisis — this is for you. It won't stay online forever.",
+  },
+};
+
+export const SEED_OFFERS: Offer[] = [
+  spartamax,
+  ironforge,
+  wealthcompass,
+  lumea,
+  focusforge,
+  watersmartbox,
+];

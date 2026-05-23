@@ -103,6 +103,64 @@ export const PriceTierSchema = z.object({
   bestValueTag: z.string().optional(), // "Best Value" pill on the featured tier
 });
 
+/**
+ * Pre-sell / advertorial page configuration. Optional per offer.
+ *
+ * When present, an offer can be reached at /presell/<slug> with this
+ * fixed-height single-screen layout (mobile-bottle, dark hero, urgency
+ * top bar). Designed for Facebook/Instagram traffic where the user
+ * arrives via an ad and needs a fast pattern-interrupt before the
+ * affiliate redirect.
+ *
+ * The "headlineLead" + "headlineMain" split lets us style the two halves
+ * differently (lead in red, main in red+serif on a new line) without
+ * the editor having to write HTML.
+ */
+export const PresellSchema = z.object({
+  // Top urgency bar
+  topBarPrefix: z.string().default("⚠"),
+  topBarSpan: z.string().default("CLASSIFIED:"),
+  topBarText: z
+    .string()
+    .default("This file may be scrubbed — view before it disappears"),
+
+  // Headline block
+  eyebrowLabel: z.string().default("Confidential leak — eyes only"),
+  /** First half of the H1 — appears in red-tag style. e.g. "[LEAKED]" */
+  headlineLead: z.string().default("[LEAKED]"),
+  /** Middle white text. e.g. "NASA's Secret" */
+  headlineMain: z.string().default(""),
+  /** Bottom red emphasized text on its own line. e.g. "Shakes the White House" */
+  headlineTail: z.string().default(""),
+
+  // Hero image / box
+  heroImage: z.string().default(""), // optional URL — falls back to emoji+text
+  heroIcon: z.string().default("🛸"), // shown when no heroImage is set
+  heroCaption: z.string().default("Classified File — Surfaced Online"),
+
+  // Body copy — plain text with a few light markers handled by the renderer:
+  //   *italic-red eyes-only intro*  for the opening italic-red sentence
+  //   [text](inline-cta)            for inline links to the affiliate URL
+  bodyCopy: z
+    .string()
+    .default(""),
+
+  // Alert box (yellow)
+  alertText: z.string().default(""),
+  /** Label of the inline link inside the alert box (links to affiliate URL). */
+  alertLinkLabel: z.string().default("it's all right here."),
+
+  // Primary CTA
+  ctaLabel: z.string().default("▶  WATCH THIS IMMEDIATELY"),
+  ctaSub: z
+    .string()
+    .default("Free to watch · No sign-up required · May be removed soon"),
+
+  // Important line (red border)
+  importantLabel: z.string().default("IMPORTANT:"),
+  importantText: z.string().default(""),
+});
+
 export const TrustBadgesSchema = z.object({
   guaranteeText: z.string().default(""),
   shippingText: z.string().default(""),
@@ -161,6 +219,10 @@ export const OfferSchema = z.object({
   faq: z.array(FaqSchema).default([]),
   // Footer disclosure paragraph (per-offer, for FDA/manufacturer compliance)
   footerDisclosure: z.string().default(""),
+  // Optional pre-sell page config. When present, /presell/<slug> renders
+  // the dark-advertorial layout against this block. Falls back to the
+  // standard landing page otherwise.
+  presell: PresellSchema.optional(),
 });
 
 export type Offer = z.infer<typeof OfferSchema>;

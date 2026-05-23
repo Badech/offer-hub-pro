@@ -58,7 +58,21 @@ export async function ensureSchemaAndSeed(): Promise<void> {
   // is a fast indexed lookup. Older offers that the admin has edited are left
   // alone.
   await applyRichSpartamaxMigration();
+  // Insert WaterSmartBox if it's missing. Safe to call repeatedly because
+  // the underlying insertOfferRow() uses ON CONFLICT DO NOTHING.
+  await ensureSeededByKey("watersmart-box");
   initialized = true;
+}
+
+async function ensureSeededByKey(slug: string): Promise<void> {
+  const sql = getSql();
+  const exists = (await sql`SELECT 1 FROM offers WHERE slug = ${slug} LIMIT 1;`) as Array<{
+    "?column?"?: number;
+  }>;
+  if (exists.length > 0) return;
+  const { SEED_OFFERS } = await import("./offer-seed");
+  const offer = SEED_OFFERS.find((o) => o.slug === slug);
+  if (offer) await insertOfferRow(offer);
 }
 
 async function applyRichSpartamaxMigration(): Promise<void> {

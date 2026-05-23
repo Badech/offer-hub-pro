@@ -1,32 +1,57 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { GlobalLayout } from "@/components/GlobalLayout";
+import { H3, LegalPage } from "@/components/LegalPage";
 
 export const Route = createFileRoute("/contact")({
-  head: () => ({ meta: [{ title: "Contact — OfferSendly" }] }),
-  component: () => (
-    <GlobalLayout>
-      <article className="max-w-2xl mx-auto px-6 py-20">
-        <h1>Contact</h1>
-        <p className="mt-6 text-[18px] text-[var(--text-secondary)]">
-          We read everything. Most messages get a reply within two business days.
-        </p>
-        <div className="mt-10 card p-6 space-y-4">
-          <Row label="Editorial" value="editorial@offersendly.com" />
-          <Row label="Partnerships" value="partners@offersendly.com" />
-          <Row label="Privacy" value="privacy@offersendly.com" />
-        </div>
-      </article>
-    </GlobalLayout>
-  ),
+  head: () => ({
+    meta: [
+      { title: "Contact — OfferSendly" },
+      { name: "description", content: "Reach the OfferSendly team for editorial, privacy, or ad-related enquiries." },
+    ],
+    links: [{ rel: "canonical", href: "https://offersendly.com/contact" }],
+  }),
+  component: ContactPage,
 });
 
-function Row({ label, value }: { label: string; value: string }) {
+function ContactPage() {
   return (
-    <div className="flex justify-between border-b border-[var(--border)] last:border-0 pb-3 last:pb-0">
-      <span className="text-[var(--text-muted)] text-[14px]">{label}</span>
-      <a href={`mailto:${value}`} className="text-[var(--accent)] font-medium">
-        {value}
-      </a>
-    </div>
+    <LegalPage title="Contact Us">
+      <p>
+        We're happy to help with any questions about <strong>offersendly.com</strong>, the
+        products featured here, or our advertising and affiliate practices.
+      </p>
+
+      <H3>General Inquiries</H3>
+      <p>
+        Email: <a href="mailto:support@offersendly.com">support@offersendly.com</a>
+      </p>
+
+      <H3>Product Support</H3>
+      <p>
+        For questions about your order, billing, or the product itself, please contact the
+        merchant or ClickBank directly. Each offer page lists the merchant's support
+        details where available.
+      </p>
+
+      <H3>ClickBank Support</H3>
+      <p>
+        For billing and refund requests you can also contact ClickBank directly at{" "}
+        <a href="https://www.clickbank.com" target="_blank" rel="noopener noreferrer">
+          clickbank.com
+        </a>
+        .
+      </p>
+
+      <H3>Ad-Related Enquiries</H3>
+      <p>
+        If you reached one of our pages through a Facebook or Instagram ad and have a
+        question about the ad itself, please email{" "}
+        <a href="mailto:support@offersendly.com">support@offersendly.com</a> with the
+        subject line <em>"Ad Enquiry"</em>.
+      </p>
+
+      <p className="mt-8 text-[13px] text-[var(--text-muted)]">
+        We aim to respond to all enquiries within 2 business days.
+      </p>
+    </LegalPage>
   );
 }

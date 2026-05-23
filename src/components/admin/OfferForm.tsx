@@ -796,6 +796,15 @@ export function OfferForm({
         />
       </Section>
 
+      {/* Presell page (optional) */}
+      <Section title="Presell Page (optional /presell/<slug> advertorial)">
+        <p className="text-[13px] text-[var(--text-secondary)] -mt-2">
+          Fill this out to enable a dark-advertorial pre-sell page at <code>/presell/{offer.slug || "your-slug"}</code>.
+          Leave blank to skip — the public landing page at <code>/offers/{offer.slug || "your-slug"}</code> always works.
+        </p>
+        <PresellFields offer={offer} update={update} />
+      </Section>
+
       {/* SEO + Disclosure */}
       <Section title="SEO & Disclosure">
         <Field label="SEO title">
@@ -898,6 +907,161 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
     <div>
       <label className="block text-[13px] font-medium text-[var(--brand)]">{label}</label>
       {children}
+    </div>
+  );
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+// Presell sub-form (used inside OfferForm). Edits the optional offer.presell
+// block. "Enable" toggle creates/destroys the whole sub-object so an offer
+// with no presell field stays clean.
+// ────────────────────────────────────────────────────────────────────────────
+
+function defaultPresell(): NonNullable<Offer["presell"]> {
+  return {
+    topBarPrefix: "⚠",
+    topBarSpan: "CLASSIFIED:",
+    topBarText: "This file may be scrubbed — view before it disappears",
+    eyebrowLabel: "Confidential leak — eyes only",
+    headlineLead: "[LEAKED]",
+    headlineMain: "",
+    headlineTail: "",
+    heroImage: "",
+    heroIcon: "🛸",
+    heroCaption: "Classified File — Surfaced Online",
+    bodyCopy: "",
+    alertText: "",
+    alertLinkLabel: "it's all right here.",
+    ctaLabel: "▶  WATCH THIS IMMEDIATELY",
+    ctaSub: "Free to watch · No sign-up required · May be removed soon",
+    importantLabel: "IMPORTANT:",
+    importantText: "",
+  };
+}
+
+function PresellFields({
+  offer,
+  update,
+}: {
+  offer: Offer;
+  update: <K extends keyof Offer>(key: K, value: Offer[K]) => void;
+}) {
+  const enabled = !!offer.presell;
+  const p = offer.presell ?? defaultPresell();
+  const updateP = <K extends keyof NonNullable<Offer["presell"]>>(
+    key: K,
+    value: NonNullable<Offer["presell"]>[K],
+  ) => update("presell", { ...p, [key]: value });
+
+  if (!enabled) {
+    return (
+      <button
+        type="button"
+        onClick={() => update("presell", defaultPresell())}
+        className="text-[var(--accent)] font-semibold text-[14px] hover:underline"
+      >
+        + Enable presell page for this offer
+      </button>
+    );
+  }
+
+  return (
+    <div className="space-y-5">
+      <div className="flex items-center justify-between">
+        <span className="text-[13px] font-semibold text-[var(--brand)]">
+          Presell page enabled
+        </span>
+        <button
+          type="button"
+          onClick={() => update("presell", undefined)}
+          className="text-[12px] text-[#b91c1c] hover:underline"
+        >
+          Disable
+        </button>
+      </div>
+
+      <Row>
+        <Field label="Top bar prefix (emoji)">
+          <input value={p.topBarPrefix} onChange={(e) => updateP("topBarPrefix", e.target.value)} className={inputCls} />
+        </Field>
+        <Field label="Top bar yellow word">
+          <input value={p.topBarSpan} onChange={(e) => updateP("topBarSpan", e.target.value)} className={inputCls} />
+        </Field>
+      </Row>
+      <Field label="Top bar text">
+        <input value={p.topBarText} onChange={(e) => updateP("topBarText", e.target.value)} className={inputCls} />
+      </Field>
+
+      <Field label="Eyebrow label (small uppercase line)">
+        <input value={p.eyebrowLabel} onChange={(e) => updateP("eyebrowLabel", e.target.value)} className={inputCls} />
+      </Field>
+
+      <Row>
+        <Field label="Headline lead (red tag)">
+          <input value={p.headlineLead} onChange={(e) => updateP("headlineLead", e.target.value)} className={inputCls} placeholder="[LEAKED]" />
+        </Field>
+        <Field label="Headline main (white)">
+          <input value={p.headlineMain} onChange={(e) => updateP("headlineMain", e.target.value)} className={inputCls} placeholder="NASA's Secret" />
+        </Field>
+      </Row>
+      <Field label="Headline tail (red, new line)">
+        <input value={p.headlineTail} onChange={(e) => updateP("headlineTail", e.target.value)} className={inputCls} placeholder="Shakes the White House" />
+      </Field>
+
+      <ImageUpload
+        label="Hero image (dark/space-themed)"
+        hint="Recommended ~720 × 240 px (3:1) · PNG or JPG · < 200 KB"
+        value={p.heroImage}
+        onChange={(url) => updateP("heroImage", url)}
+      />
+      <Row>
+        <Field label="Hero icon (fallback if no image)">
+          <input value={p.heroIcon} onChange={(e) => updateP("heroIcon", e.target.value)} className={inputCls} />
+        </Field>
+        <Field label="Hero caption (fallback if no image)">
+          <input value={p.heroCaption} onChange={(e) => updateP("heroCaption", e.target.value)} className={inputCls} />
+        </Field>
+      </Row>
+
+      <Field label="Body copy — supports *italic-red*, **bold**, [text](inline-cta)">
+        <textarea
+          rows={6}
+          value={p.bodyCopy}
+          onChange={(e) => updateP("bodyCopy", e.target.value)}
+          className={textareaCls}
+          placeholder="*This message is for your eyes only.*&#10;Body paragraph here — use [WATCH THIS](inline-cta) for inline CTA links."
+        />
+      </Field>
+
+      <Field label="Alert box text">
+        <textarea
+          rows={2}
+          value={p.alertText}
+          onChange={(e) => updateP("alertText", e.target.value)}
+          className={textareaCls}
+        />
+      </Field>
+      <Field label="Alert inline link label">
+        <input value={p.alertLinkLabel} onChange={(e) => updateP("alertLinkLabel", e.target.value)} className={inputCls} />
+      </Field>
+
+      <Row>
+        <Field label="CTA button label">
+          <input value={p.ctaLabel} onChange={(e) => updateP("ctaLabel", e.target.value)} className={inputCls} />
+        </Field>
+        <Field label="CTA sub-text">
+          <input value={p.ctaSub} onChange={(e) => updateP("ctaSub", e.target.value)} className={inputCls} />
+        </Field>
+      </Row>
+
+      <Row>
+        <Field label="Important line label (red)">
+          <input value={p.importantLabel} onChange={(e) => updateP("importantLabel", e.target.value)} className={inputCls} />
+        </Field>
+        <Field label="Important line text">
+          <input value={p.importantText} onChange={(e) => updateP("importantText", e.target.value)} className={inputCls} />
+        </Field>
+      </Row>
     </div>
   );
 }

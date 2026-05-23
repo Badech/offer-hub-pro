@@ -14,6 +14,7 @@ import { Route as SearchRouteImport } from './routes/search'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as HowWeReviewRouteImport } from './routes/how-we-review'
 import { Route as DisclosureRouteImport } from './routes/disclosure'
+import { Route as DisclaimerRouteImport } from './routes/disclaimer'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as CategoriesRouteImport } from './routes/categories'
 import { Route as AdminRouteImport } from './routes/admin'
@@ -21,6 +22,7 @@ import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as OffersIndexRouteImport } from './routes/offers.index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
+import { Route as PresellSlugRouteImport } from './routes/presell.$slug'
 import { Route as OffersSlugRouteImport } from './routes/offers.$slug'
 import { Route as CategoriesSlugRouteImport } from './routes/categories.$slug'
 import { Route as AdminLoginRouteImport } from './routes/admin.login'
@@ -50,6 +52,11 @@ const HowWeReviewRoute = HowWeReviewRouteImport.update({
 const DisclosureRoute = DisclosureRouteImport.update({
   id: '/disclosure',
   path: '/disclosure',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DisclaimerRoute = DisclaimerRouteImport.update({
+  id: '/disclaimer',
+  path: '/disclaimer',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ContactRoute = ContactRouteImport.update({
@@ -87,6 +94,11 @@ const AdminIndexRoute = AdminIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AdminRoute,
 } as any)
+const PresellSlugRoute = PresellSlugRouteImport.update({
+  id: '/presell/$slug',
+  path: '/presell/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const OffersSlugRoute = OffersSlugRouteImport.update({
   id: '/offers/$slug',
   path: '/offers/$slug',
@@ -119,6 +131,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminRouteWithChildren
   '/categories': typeof CategoriesRouteWithChildren
   '/contact': typeof ContactRoute
+  '/disclaimer': typeof DisclaimerRoute
   '/disclosure': typeof DisclosureRoute
   '/how-we-review': typeof HowWeReviewRoute
   '/privacy': typeof PrivacyRoute
@@ -127,6 +140,7 @@ export interface FileRoutesByFullPath {
   '/admin/login': typeof AdminLoginRoute
   '/categories/$slug': typeof CategoriesSlugRoute
   '/offers/$slug': typeof OffersSlugRoute
+  '/presell/$slug': typeof PresellSlugRoute
   '/admin/': typeof AdminIndexRoute
   '/offers/': typeof OffersIndexRoute
   '/admin/offers/new': typeof AdminOffersNewRoute
@@ -137,6 +151,7 @@ export interface FileRoutesByTo {
   '/about': typeof AboutRoute
   '/categories': typeof CategoriesRouteWithChildren
   '/contact': typeof ContactRoute
+  '/disclaimer': typeof DisclaimerRoute
   '/disclosure': typeof DisclosureRoute
   '/how-we-review': typeof HowWeReviewRoute
   '/privacy': typeof PrivacyRoute
@@ -145,6 +160,7 @@ export interface FileRoutesByTo {
   '/admin/login': typeof AdminLoginRoute
   '/categories/$slug': typeof CategoriesSlugRoute
   '/offers/$slug': typeof OffersSlugRoute
+  '/presell/$slug': typeof PresellSlugRoute
   '/admin': typeof AdminIndexRoute
   '/offers': typeof OffersIndexRoute
   '/admin/offers/new': typeof AdminOffersNewRoute
@@ -157,6 +173,7 @@ export interface FileRoutesById {
   '/admin': typeof AdminRouteWithChildren
   '/categories': typeof CategoriesRouteWithChildren
   '/contact': typeof ContactRoute
+  '/disclaimer': typeof DisclaimerRoute
   '/disclosure': typeof DisclosureRoute
   '/how-we-review': typeof HowWeReviewRoute
   '/privacy': typeof PrivacyRoute
@@ -165,6 +182,7 @@ export interface FileRoutesById {
   '/admin/login': typeof AdminLoginRoute
   '/categories/$slug': typeof CategoriesSlugRoute
   '/offers/$slug': typeof OffersSlugRoute
+  '/presell/$slug': typeof PresellSlugRoute
   '/admin/': typeof AdminIndexRoute
   '/offers/': typeof OffersIndexRoute
   '/admin/offers/new': typeof AdminOffersNewRoute
@@ -178,6 +196,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/categories'
     | '/contact'
+    | '/disclaimer'
     | '/disclosure'
     | '/how-we-review'
     | '/privacy'
@@ -186,6 +205,7 @@ export interface FileRouteTypes {
     | '/admin/login'
     | '/categories/$slug'
     | '/offers/$slug'
+    | '/presell/$slug'
     | '/admin/'
     | '/offers/'
     | '/admin/offers/new'
@@ -196,6 +216,7 @@ export interface FileRouteTypes {
     | '/about'
     | '/categories'
     | '/contact'
+    | '/disclaimer'
     | '/disclosure'
     | '/how-we-review'
     | '/privacy'
@@ -204,6 +225,7 @@ export interface FileRouteTypes {
     | '/admin/login'
     | '/categories/$slug'
     | '/offers/$slug'
+    | '/presell/$slug'
     | '/admin'
     | '/offers'
     | '/admin/offers/new'
@@ -215,6 +237,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/categories'
     | '/contact'
+    | '/disclaimer'
     | '/disclosure'
     | '/how-we-review'
     | '/privacy'
@@ -223,6 +246,7 @@ export interface FileRouteTypes {
     | '/admin/login'
     | '/categories/$slug'
     | '/offers/$slug'
+    | '/presell/$slug'
     | '/admin/'
     | '/offers/'
     | '/admin/offers/new'
@@ -235,12 +259,14 @@ export interface RootRouteChildren {
   AdminRoute: typeof AdminRouteWithChildren
   CategoriesRoute: typeof CategoriesRouteWithChildren
   ContactRoute: typeof ContactRoute
+  DisclaimerRoute: typeof DisclaimerRoute
   DisclosureRoute: typeof DisclosureRoute
   HowWeReviewRoute: typeof HowWeReviewRoute
   PrivacyRoute: typeof PrivacyRoute
   SearchRoute: typeof SearchRoute
   TermsRoute: typeof TermsRoute
   OffersSlugRoute: typeof OffersSlugRoute
+  PresellSlugRoute: typeof PresellSlugRoute
   OffersIndexRoute: typeof OffersIndexRoute
 }
 
@@ -279,6 +305,13 @@ declare module '@tanstack/react-router' {
       path: '/disclosure'
       fullPath: '/disclosure'
       preLoaderRoute: typeof DisclosureRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/disclaimer': {
+      id: '/disclaimer'
+      path: '/disclaimer'
+      fullPath: '/disclaimer'
+      preLoaderRoute: typeof DisclaimerRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/contact': {
@@ -329,6 +362,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin/'
       preLoaderRoute: typeof AdminIndexRouteImport
       parentRoute: typeof AdminRoute
+    }
+    '/presell/$slug': {
+      id: '/presell/$slug'
+      path: '/presell/$slug'
+      fullPath: '/presell/$slug'
+      preLoaderRoute: typeof PresellSlugRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/offers/$slug': {
       id: '/offers/$slug'
@@ -402,12 +442,14 @@ const rootRouteChildren: RootRouteChildren = {
   AdminRoute: AdminRouteWithChildren,
   CategoriesRoute: CategoriesRouteWithChildren,
   ContactRoute: ContactRoute,
+  DisclaimerRoute: DisclaimerRoute,
   DisclosureRoute: DisclosureRoute,
   HowWeReviewRoute: HowWeReviewRoute,
   PrivacyRoute: PrivacyRoute,
   SearchRoute: SearchRoute,
   TermsRoute: TermsRoute,
   OffersSlugRoute: OffersSlugRoute,
+  PresellSlugRoute: PresellSlugRoute,
   OffersIndexRoute: OffersIndexRoute,
 }
 export const routeTree = rootRouteImport
