@@ -108,3 +108,36 @@ export const deleteOffer = createServerFn({ method: "POST" })
     await dbDeleteOffer(data);
     return { ok: true };
   });
+
+// ────────────────────────────────────────────────────────────────────────────
+// Image upload — Vercel Blob, auth-gated. Returns a public URL the admin can
+// paste back into the offer's imageUrl field (or that the upload widget can
+// populate automatically).
+// ────────────────────────────────────────────────────────────────────────────
+
+export const uploadImage = createServerFn({ method: "POST" })
+  .inputValidator((d: unknown) => {
+    if (!(d instanceof FormData)) throw new Error("Expected FormData");
+    const file = d.get("file");
+    if (!(file instanceof File)) throw new Error("Missing file field");
+    return { file };
+  })
+  .handler(async ({ data }): Promise<{ url: string }> => {
+    requireAdmin();
+    const token = process.env.BLOB_READ_WRITE_TOKEN;
+    if (!token) {
+      throw new Error(
+        "BLOB_READ_WRITE_TOKEN is not set. Create a Vercel Blob store and add the token to env vars.",
+      );
+    }
+    // Dynamic import keeps the heavy SDK out of the SSR graph until needed.
+    const { put } = await import("@vercel/blob");
+    const safeName = data.file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+    const key = `offers/${Date.now()}-${safeName}`;
+    const blob = await put(key, data.file, {
+      access: "public",
+      token,
+      addRandomSuffix: true,
+    });
+    return { url: blob.url };
+  });

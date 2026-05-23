@@ -15,7 +15,13 @@ import type { Offer } from "@/lib/offer-schema";
 // ────────────────────────────────────────────────────────────────────────────
 
 export function PastedOfferPage({ offer }: { offer: Offer }) {
-  const { styles, body } = extractOfferHtml(offer.html);
+  // Pass the offer's affiliate URL + image URL into the extractor so it can
+  // rewrite all <a href>s to the affiliate URL and swap {{image}}
+  // placeholders for a clickable image.
+  const { styles, body } = extractOfferHtml(offer.html, {
+    affiliateUrl: offer.affiliateUrl,
+    imageUrl: offer.imageUrl,
+  });
   return (
     <>
       {styles && <style dangerouslySetInnerHTML={{ __html: styles }} />}

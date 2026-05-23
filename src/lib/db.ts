@@ -36,6 +36,7 @@ export async function ensureSchemaAndSeed(): Promise<void> {
       slug          TEXT PRIMARY KEY,
       title         TEXT NOT NULL,
       affiliate_url TEXT,
+      image_url     TEXT,
       html          TEXT NOT NULL,
       created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
       updated_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
@@ -50,6 +51,7 @@ export async function ensureSchemaAndSeed(): Promise<void> {
   // are already absent.
   await sql`ALTER TABLE offers ADD COLUMN IF NOT EXISTS html TEXT;`;
   await sql`ALTER TABLE offers ADD COLUMN IF NOT EXISTS affiliate_url TEXT;`;
+  await sql`ALTER TABLE offers ADD COLUMN IF NOT EXISTS image_url TEXT;`;
   await sql`ALTER TABLE offers DROP COLUMN IF EXISTS tagline;`;
   await sql`ALTER TABLE offers DROP COLUMN IF EXISTS category;`;
   await sql`ALTER TABLE offers DROP COLUMN IF EXISTS featured;`;
@@ -80,6 +82,7 @@ type Row = {
   slug: string;
   title: string;
   affiliate_url: string | null;
+  image_url: string | null;
   html: string;
 };
 
@@ -88,6 +91,7 @@ function rowToOffer(r: Row): Offer {
     slug: r.slug,
     title: r.title,
     affiliateUrl: r.affiliate_url ?? "",
+    imageUrl: r.image_url ?? "",
     html: r.html,
   };
 }
@@ -96,7 +100,7 @@ export async function listOffers(): Promise<Offer[]> {
   await ensureSchemaAndSeed();
   const sql = getSql();
   const rows = (await sql`
-    SELECT slug, title, affiliate_url, html FROM offers
+    SELECT slug, title, affiliate_url, image_url, html FROM offers
     ORDER BY created_at DESC;
   `) as Row[];
   return rows.map(rowToOffer);
@@ -106,7 +110,7 @@ export async function getOfferBySlug(slug: string): Promise<Offer | null> {
   await ensureSchemaAndSeed();
   const sql = getSql();
   const rows = (await sql`
-    SELECT slug, title, affiliate_url, html FROM offers
+    SELECT slug, title, affiliate_url, image_url, html FROM offers
     WHERE slug = ${slug}
     LIMIT 1;
   `) as Row[];
@@ -117,8 +121,8 @@ export async function createOffer(offer: Offer): Promise<void> {
   await ensureSchemaAndSeed();
   const sql = getSql();
   await sql`
-    INSERT INTO offers (slug, title, affiliate_url, html)
-    VALUES (${offer.slug}, ${offer.title}, ${offer.affiliateUrl || null}, ${offer.html})
+    INSERT INTO offers (slug, title, affiliate_url, image_url, html)
+    VALUES (${offer.slug}, ${offer.title}, ${offer.affiliateUrl || null}, ${offer.imageUrl || null}, ${offer.html})
     ON CONFLICT (slug) DO NOTHING;
   `;
 }
@@ -130,6 +134,7 @@ export async function updateOffer(offer: Offer): Promise<void> {
     UPDATE offers
     SET title = ${offer.title},
         affiliate_url = ${offer.affiliateUrl || null},
+        image_url = ${offer.imageUrl || null},
         html = ${offer.html},
         updated_at = NOW()
     WHERE slug = ${offer.slug};

@@ -20,6 +20,10 @@ export const OfferSchema = z.object({
     .regex(/^[a-z0-9-]+$/, "Slug must be lowercase letters, numbers, and hyphens only"),
   title: z.string().min(1),
   affiliateUrl: z.string().url().optional().or(z.literal("")),
+  /** Optional image URL (typically uploaded to Vercel Blob). Renders at the
+   *  {{image}} placeholder inside the pasted HTML body, and is itself
+   *  clickable, linking to affiliateUrl. */
+  imageUrl: z.string().optional().or(z.literal("")),
   html: z.string().min(1, "Paste some HTML — the offer is empty"),
 });
 
