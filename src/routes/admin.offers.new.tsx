@@ -1,5 +1,6 @@
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useRef, useState } from "react";
+import { HtmlPreview } from "@/components/admin/HtmlPreview";
 import { OfferSchema } from "@/lib/offer-schema";
 import { createOffer, uploadImage } from "@/lib/server-functions";
 
@@ -48,117 +49,135 @@ function NewOfferPage() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-6 py-12">
-      <h1 className="text-[32px]">New Offer</h1>
-      <p className="mt-2 text-[var(--text-secondary)]">
-        Paste the full HTML for your offer page below. We render it verbatim at{" "}
-        <code>/offers/&lt;slug&gt;</code> and add our standard footer (Privacy / Terms /
-        Disclaimer / Contact + affiliate disclosure) at the bottom.
-      </p>
-
-      <form onSubmit={onSubmit} className="mt-8 space-y-6">
-        <fieldset className="card p-6 space-y-5">
-          <legend className="text-[18px] font-semibold text-[var(--brand)] px-2">Basics</legend>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Field label="Title (required)">
-              <input
-                required
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                className={inputCls}
-                placeholder="e.g. WaterSmartBox — NASA Leak"
-              />
-            </Field>
-            <Field label="Slug (auto from title if empty)">
-              <input
-                value={slug}
-                onChange={(e) => setSlug(e.target.value)}
-                className={inputCls}
-                placeholder="watersmart-box-leak"
-              />
-            </Field>
-          </div>
-          <Field label="Affiliate URL — overwrites EVERY link in the pasted HTML">
-            <input
-              type="url"
-              value={affiliateUrl}
-              onChange={(e) => setAffiliateUrl(e.target.value)}
-              className={inputCls}
-              placeholder="https://your-hop-link.hop.clickbank.net"
-            />
-            <p className="mt-1 text-[12px] text-[var(--text-muted)]">
-              Every <code>&lt;a href&gt;</code> in your pasted HTML will be rewritten
-              to this URL. <code>mailto:</code> links become{" "}
-              <code>support@offersendly.com</code>. Links to <code>offersendly.com</code>{" "}
-              and pure anchor links (<code>#faq</code>) are preserved.
-            </p>
-          </Field>
-
-          <Field label="Image (optional — replaces {{image}} placeholder in HTML)">
-            <ImageUploader value={imageUrl} onChange={setImageUrl} />
-            <p className="mt-1 text-[12px] text-[var(--text-muted)]">
-              Add <code>&#123;&#123;image&#125;&#125;</code> anywhere in your pasted
-              HTML and we'll swap it for this image, wrapped in a clickable link to
-              your affiliate URL.
-            </p>
-          </Field>
-        </fieldset>
-
-        <fieldset className="card p-6 space-y-3">
-          <legend className="text-[18px] font-semibold text-[var(--brand)] px-2">HTML</legend>
-          <p className="text-[13px] text-[var(--text-secondary)]">
-            Paste the full HTML document (with <code>&lt;head&gt;</code>, <code>&lt;style&gt;</code>,
-            and <code>&lt;body&gt;</code>). We auto-extract the style and body content, strip
-            any <code>&lt;footer&gt;</code> in your HTML, and append our standard footer.
+    <div className="h-[calc(100vh-3.5rem)] flex flex-col">
+      <div className="px-6 py-4 border-b border-[var(--border)] flex items-center justify-between gap-4 shrink-0">
+        <div>
+          <h1 className="text-[24px]">New Offer</h1>
+          <p className="text-[12px] text-[var(--text-secondary)] mt-0.5">
+            Edit on the left — see how it'll look on the right. Submit when you're happy.
           </p>
-          <p className="text-[12px] text-[var(--text-muted)]">
-            Note: inline <code>&lt;script&gt;</code> tags in pasted HTML do not execute (browser
-            security). External <code>&lt;script src=…&gt;</code> tags do load. Use CSS animations
-            for any motion.
-          </p>
-          <textarea
-            required
-            value={html}
-            onChange={(e) => setHtml(e.target.value)}
-            spellCheck={false}
-            placeholder="<!DOCTYPE html>&#10;<html lang=&quot;en&quot;>&#10;<head>&#10;  <style>...</style>&#10;</head>&#10;<body>&#10;  ...your offer page...&#10;</body>&#10;</html>"
-            className="w-full min-h-[480px] p-4 font-mono text-[12px] leading-relaxed border border-[var(--border)] rounded-md bg-white focus:outline-none focus:border-[var(--accent)] resize-y"
-          />
-        </fieldset>
-
-        {error && (
-          <div
-            className="rounded-md border border-[#fca5a5] bg-[#fef2f2] text-[#7f1d1d] text-[13px] p-3"
-            role="alert"
-          >
-            {error}
-          </div>
-        )}
-
-        <div className="flex items-center gap-3 sticky bottom-0 bg-[var(--background)] border-t border-[var(--border)] py-4 -mx-6 px-6">
-          <button type="submit" disabled={busy} className="btn-primary disabled:opacity-50">
-            {busy ? "Creating…" : "Create offer"}
-          </button>
+        </div>
+        <div className="flex items-center gap-3">
+          {error && (
+            <div
+              className="rounded-md border border-[#fca5a5] bg-[#fef2f2] text-[#7f1d1d] text-[12px] px-3 py-1.5"
+              role="alert"
+            >
+              {error}
+            </div>
+          )}
           <button
             type="button"
             onClick={() => router.navigate({ to: "/admin" })}
-            className="btn-ghost"
+            className="text-[13px] text-[var(--text-secondary)] hover:underline"
           >
             Cancel
           </button>
+          <button
+            type="submit"
+            form="offer-form"
+            disabled={busy || !title.trim() || !html.trim()}
+            className="btn-primary disabled:opacity-50"
+          >
+            {busy ? "Creating…" : "Create offer"}
+          </button>
         </div>
-      </form>
+      </div>
+
+      {/* Two-column body: form (left) + preview (right). Stacks on mobile. */}
+      <div className="flex-1 grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] min-h-0">
+        {/* ───── LEFT: form ───── */}
+        <form
+          id="offer-form"
+          onSubmit={onSubmit}
+          className="overflow-y-auto p-6 space-y-6 border-r border-[var(--border)]"
+        >
+          <fieldset className="card p-5 space-y-4">
+            <legend className="text-[15px] font-semibold text-[var(--brand)] px-2">Basics</legend>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <Field label="Title (required)">
+                <input
+                  required
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  className={inputCls}
+                  placeholder="WaterSmartBox — NASA Leak"
+                />
+              </Field>
+              <Field label="Slug (auto from title)">
+                <input
+                  value={slug}
+                  onChange={(e) => setSlug(e.target.value)}
+                  className={inputCls}
+                  placeholder="watersmart-box-leak"
+                />
+              </Field>
+            </div>
+            <Field label="Affiliate URL — overwrites every <a href> in HTML">
+              <input
+                type="url"
+                value={affiliateUrl}
+                onChange={(e) => setAffiliateUrl(e.target.value)}
+                className={inputCls}
+                placeholder="https://your-hop-link.hop.clickbank.net"
+              />
+              <p className="mt-1 text-[11px] text-[var(--text-muted)]">
+                <code>mailto:</code> → <code>support@offersendly.com</code>. Anchors
+                (<code>#faq</code>) and links to <code>offersendly.com</code> preserved.
+              </p>
+            </Field>
+            <Field label="Image (replaces {{image}} placeholder)">
+              <ImageUploader value={imageUrl} onChange={setImageUrl} />
+              <p className="mt-1 text-[11px] text-[var(--text-muted)]">
+                Write <code>&#123;&#123;image&#125;&#125;</code> in your HTML to insert
+                this image (clickable → affiliate URL).
+              </p>
+            </Field>
+          </fieldset>
+
+          <fieldset className="card p-5 space-y-3">
+            <legend className="text-[15px] font-semibold text-[var(--brand)] px-2">HTML</legend>
+            <p className="text-[12px] text-[var(--text-secondary)]">
+              Paste the full HTML document. Style + body are extracted; pasted{" "}
+              <code>&lt;footer&gt;</code> is replaced with ours; all <code>&lt;a&gt;</code>{" "}
+              links go to your affiliate URL.
+            </p>
+            <textarea
+              required
+              value={html}
+              onChange={(e) => setHtml(e.target.value)}
+              spellCheck={false}
+              placeholder={`<!DOCTYPE html>\n<html lang="en">\n<head>\n  <style>...</style>\n</head>\n<body>\n  <a href="https://example.com">CTA → goes to your affiliate URL</a>\n  {{image}}    ← swapped for your uploaded image\n</body>\n</html>`}
+              className="w-full min-h-[600px] p-4 font-mono text-[12px] leading-relaxed border border-[var(--border)] rounded-md bg-white focus:outline-none focus:border-[var(--accent)] resize-y"
+            />
+          </fieldset>
+        </form>
+
+        {/* ───── RIGHT: preview ───── */}
+        <div className="hidden lg:flex flex-col min-h-0">
+          <HtmlPreview html={html} affiliateUrl={affiliateUrl} imageUrl={imageUrl} />
+        </div>
+      </div>
+
+      {/* Mobile-only: preview below the form */}
+      <div className="lg:hidden border-t border-[var(--border)] h-[60vh] flex flex-col">
+        <HtmlPreview html={html} affiliateUrl={affiliateUrl} imageUrl={imageUrl} />
+      </div>
     </div>
   );
 }
 
+// ────────────────────────────────────────────────────────────────────────────
+// Form primitives
+// ────────────────────────────────────────────────────────────────────────────
+
 const inputCls =
-  "mt-1 w-full border border-[var(--border)] rounded-md px-3 py-2 text-[14px] bg-white focus:outline-none focus:border-[var(--accent)]";
+  "mt-1 w-full border border-[var(--border)] rounded-md px-3 py-2 text-[13px] bg-white focus:outline-none focus:border-[var(--accent)]";
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <label className="block text-[13px] font-medium text-[var(--brand)]">{label}</label>
+      <label className="block text-[12px] font-medium text-[var(--brand)]">{label}</label>
       {children}
     </div>
   );
@@ -202,10 +221,10 @@ function ImageUploader({
         <img
           src={value}
           alt=""
-          className="h-20 w-20 rounded-md border border-[var(--border)] object-cover"
+          className="h-16 w-16 rounded-md border border-[var(--border)] object-cover"
         />
       ) : (
-        <div className="h-20 w-20 rounded-md border border-dashed border-[var(--border)] grid place-items-center text-[12px] text-[var(--text-muted)]">
+        <div className="h-16 w-16 rounded-md border border-dashed border-[var(--border)] grid place-items-center text-[11px] text-[var(--text-muted)]">
           No image
         </div>
       )}
@@ -215,9 +234,9 @@ function ImageUploader({
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder="Paste an image URL, or upload below"
-          className="w-full border border-[var(--border)] rounded-md px-3 py-2 text-[13px] focus:outline-none focus:border-[var(--accent)]"
+          className="w-full border border-[var(--border)] rounded-md px-3 py-1.5 text-[12px] focus:outline-none focus:border-[var(--accent)]"
         />
-        <div className="mt-2 flex items-center gap-2">
+        <div className="mt-1.5 flex items-center gap-2">
           <input
             ref={inputRef}
             type="file"
@@ -226,23 +245,23 @@ function ImageUploader({
               const f = e.target.files?.[0];
               if (f) onFile(f);
             }}
-            className="text-[12px]"
+            className="text-[11px]"
           />
           {uploading && (
-            <span className="text-[12px] text-[var(--text-secondary)]">Uploading…</span>
+            <span className="text-[11px] text-[var(--text-secondary)]">Uploading…</span>
           )}
           {value && (
             <button
               type="button"
               onClick={() => onChange("")}
-              className="text-[12px] text-[#b91c1c] hover:underline"
+              className="text-[11px] text-[#b91c1c] hover:underline"
             >
               Clear
             </button>
           )}
         </div>
         {err && (
-          <div className="mt-2 text-[12px] text-[#b91c1c]" role="alert">
+          <div className="mt-1 text-[11px] text-[#b91c1c]" role="alert">
             {err}
           </div>
         )}
