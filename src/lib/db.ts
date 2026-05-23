@@ -4,9 +4,9 @@ import type { Offer } from "./offer-schema";
 // ────────────────────────────────────────────────────────────────────────────
 // Neon Postgres client.
 //
-// Schema: a single `offers` table. Top-level scalar fields are columns for
-// efficient listing/filtering; nested rich content is stored as a single JSONB
-// `payload` column so the admin form can evolve without migrations.
+// Schema is dead-simple after the paste-HTML migration: one `offers` table
+// with a slug PK, a title, an optional affiliate URL, the raw HTML the admin
+// pasted, and timestamps. No JSONB payload, no nested fields.
 // ────────────────────────────────────────────────────────────────────────────
 
 function getSql() {
@@ -22,142 +22,105 @@ function getSql() {
 let initialized = false;
 
 /**
- * Idempotent — creates the `offers` table if it doesn't exist, and seeds the
- * five built-in offers on the first run only. Safe to call before every query.
+ * Idempotent — creates the offers table if it doesn't exist, runs the
+ * paste-HTML migration once (drops the legacy `payload` column and DELETEs
+ * the legacy seed rows). Safe to call before every query.
  */
 export async function ensureSchemaAndSeed(): Promise<void> {
   if (initialized) return;
   const sql = getSql();
 
+  // Create the table in its new minimal shape if it doesn't exist.
   await sql`
     CREATE TABLE IF NOT EXISTS offers (
       slug          TEXT PRIMARY KEY,
       title         TEXT NOT NULL,
-      tagline       TEXT NOT NULL,
-      category      TEXT NOT NULL,
-      affiliate_url TEXT NOT NULL,
-      featured      BOOLEAN NOT NULL DEFAULT FALSE,
-      published_at  TEXT NOT NULL,
-      payload       JSONB NOT NULL,
+      affiliate_url TEXT,
+      html          TEXT NOT NULL,
       created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
       updated_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
   `;
 
-  const rows = (await sql`SELECT COUNT(*)::int AS n FROM offers;`) as Array<{ n: number }>;
-  if (rows[0]?.n === 0) {
-    const { SEED_OFFERS } = await import("./offer-seed");
-    for (const offer of SEED_OFFERS) {
-      await insertOfferRow(offer);
-    }
+  // ── One-time paste-HTML migration ──────────────────────────────────────
+  // The legacy schema had: tagline, category, featured, published_at,
+  // payload (JSONB). Drop those columns. Add `html` if it's missing. Wipe
+  // every existing row (the user explicitly requested this — see commit
+  // history). Idempotent: subsequent runs are no-ops because the columns
+  // are already absent.
+  await sql`ALTER TABLE offers ADD COLUMN IF NOT EXISTS html TEXT;`;
+  await sql`ALTER TABLE offers ADD COLUMN IF NOT EXISTS affiliate_url TEXT;`;
+  await sql`ALTER TABLE offers DROP COLUMN IF EXISTS tagline;`;
+  await sql`ALTER TABLE offers DROP COLUMN IF EXISTS category;`;
+  await sql`ALTER TABLE offers DROP COLUMN IF EXISTS featured;`;
+  await sql`ALTER TABLE offers DROP COLUMN IF EXISTS published_at;`;
+  await sql`ALTER TABLE offers DROP COLUMN IF EXISTS payload;`;
+
+  // Detect legacy rows (those with NULL html — leftover from the previous
+  // schema) and delete them. This is the "delete all existing offers"
+  // instruction the user gave us.
+  const legacy = (await sql`
+    SELECT COUNT(*)::int AS n FROM offers WHERE html IS NULL;
+  `) as Array<{ n: number }>;
+  if (legacy[0]?.n > 0) {
+    await sql`DELETE FROM offers WHERE html IS NULL;`;
   }
 
-  // One-time migration: re-apply the Spartamax seed if its payload doesn't yet
-  // include the new `topBar` field (introduced when the landing template was
-  // redesigned). Idempotent — runs at most once per cold start, and the check
-  // is a fast indexed lookup. Older offers that the admin has edited are left
-  // alone.
-  await applyRichSpartamaxMigration();
-  // Insert WaterSmartBox if it's missing. Safe to call repeatedly because
-  // the underlying insertOfferRow() uses ON CONFLICT DO NOTHING.
-  await ensureSeededByKey("watersmart-box");
+  // Make html NOT NULL once any leftover rows are gone.
+  await sql`ALTER TABLE offers ALTER COLUMN html SET NOT NULL;`;
+
   initialized = true;
 }
 
-async function ensureSeededByKey(slug: string): Promise<void> {
-  const sql = getSql();
-  const exists = (await sql`SELECT 1 FROM offers WHERE slug = ${slug} LIMIT 1;`) as Array<{
-    "?column?"?: number;
-  }>;
-  if (exists.length > 0) return;
-  const { SEED_OFFERS } = await import("./offer-seed");
-  const offer = SEED_OFFERS.find((o) => o.slug === slug);
-  if (offer) await insertOfferRow(offer);
-}
-
-async function applyRichSpartamaxMigration(): Promise<void> {
-  const sql = getSql();
-  const rows = (await sql`
-    SELECT slug, payload FROM offers
-    WHERE slug = 'spartamax' AND (payload->'topBar') IS NULL
-    LIMIT 1;
-  `) as Array<{ slug: string }>;
-  if (rows.length === 0) return; // already migrated, or admin has customised it
-
-  const { SEED_OFFERS } = await import("./offer-seed");
-  const spartamax = SEED_OFFERS.find((o) => o.slug === "spartamax");
-  if (!spartamax) return;
-
-  await sql`
-    UPDATE offers
-    SET title = ${spartamax.title},
-        tagline = ${spartamax.tagline},
-        category = ${spartamax.category},
-        affiliate_url = ${spartamax.affiliateUrl},
-        featured = ${spartamax.featured},
-        published_at = ${spartamax.publishedAt},
-        payload = ${JSON.stringify(spartamax)}::jsonb,
-        updated_at = NOW()
-    WHERE slug = 'spartamax';
-  `;
-}
-
-async function insertOfferRow(offer: Offer): Promise<void> {
-  const sql = getSql();
-  await sql`
-    INSERT INTO offers (slug, title, tagline, category, affiliate_url, featured, published_at, payload)
-    VALUES (${offer.slug}, ${offer.title}, ${offer.tagline}, ${offer.category},
-            ${offer.affiliateUrl}, ${offer.featured}, ${offer.publishedAt}, ${JSON.stringify(offer)}::jsonb)
-    ON CONFLICT (slug) DO NOTHING;
-  `;
-}
-
 // ────────────────────────────────────────────────────────────────────────────
-// Public queries
+// CRUD
 // ────────────────────────────────────────────────────────────────────────────
 
 type Row = {
   slug: string;
-  payload: Offer;
+  title: string;
+  affiliate_url: string | null;
+  html: string;
 };
+
+function rowToOffer(r: Row): Offer {
+  return {
+    slug: r.slug,
+    title: r.title,
+    affiliateUrl: r.affiliate_url ?? "",
+    html: r.html,
+  };
+}
 
 export async function listOffers(): Promise<Offer[]> {
   await ensureSchemaAndSeed();
   const sql = getSql();
   const rows = (await sql`
-    SELECT slug, payload FROM offers
-    ORDER BY featured DESC, published_at DESC;
+    SELECT slug, title, affiliate_url, html FROM offers
+    ORDER BY created_at DESC;
   `) as Row[];
-  return rows.map((r) => r.payload);
+  return rows.map(rowToOffer);
 }
 
 export async function getOfferBySlug(slug: string): Promise<Offer | null> {
   await ensureSchemaAndSeed();
   const sql = getSql();
   const rows = (await sql`
-    SELECT slug, payload FROM offers WHERE slug = ${slug} LIMIT 1;
+    SELECT slug, title, affiliate_url, html FROM offers
+    WHERE slug = ${slug}
+    LIMIT 1;
   `) as Row[];
-  return rows[0]?.payload ?? null;
-}
-
-export async function listCategories(): Promise<string[]> {
-  await ensureSchemaAndSeed();
-  const sql = getSql();
-  const rows = (await sql`SELECT DISTINCT category FROM offers ORDER BY category;`) as Array<{
-    category: string;
-  }>;
-  return rows.map((r) => r.category);
+  return rows[0] ? rowToOffer(rows[0]) : null;
 }
 
 export async function createOffer(offer: Offer): Promise<void> {
   await ensureSchemaAndSeed();
-  await insertOfferRow(offer);
-}
-
-export async function deleteOffer(slug: string): Promise<void> {
-  await ensureSchemaAndSeed();
   const sql = getSql();
-  await sql`DELETE FROM offers WHERE slug = ${slug};`;
+  await sql`
+    INSERT INTO offers (slug, title, affiliate_url, html)
+    VALUES (${offer.slug}, ${offer.title}, ${offer.affiliateUrl || null}, ${offer.html})
+    ON CONFLICT (slug) DO NOTHING;
+  `;
 }
 
 export async function updateOffer(offer: Offer): Promise<void> {
@@ -166,13 +129,22 @@ export async function updateOffer(offer: Offer): Promise<void> {
   await sql`
     UPDATE offers
     SET title = ${offer.title},
-        tagline = ${offer.tagline},
-        category = ${offer.category},
-        affiliate_url = ${offer.affiliateUrl},
-        featured = ${offer.featured},
-        published_at = ${offer.publishedAt},
-        payload = ${JSON.stringify(offer)}::jsonb,
+        affiliate_url = ${offer.affiliateUrl || null},
+        html = ${offer.html},
         updated_at = NOW()
     WHERE slug = ${offer.slug};
   `;
+}
+
+export async function deleteOffer(slug: string): Promise<void> {
+  await ensureSchemaAndSeed();
+  const sql = getSql();
+  await sql`DELETE FROM offers WHERE slug = ${slug};`;
+}
+
+// Legacy compatibility: a few discovery routes used to list categories.
+// With the new schema there are no categories — return an empty list so
+// any lingering imports don't crash before they're updated.
+export async function listCategories(): Promise<string[]> {
+  return [];
 }

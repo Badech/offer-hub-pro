@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
-import { deleteOffer, fetchOffers } from "@/lib/server-functions";
 import { useState } from "react";
+import { deleteOffer, fetchOffers } from "@/lib/server-functions";
 
 export const Route = createFileRoute("/admin/")({
   staleTime: 0,
@@ -26,12 +26,10 @@ function AdminOffersList() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto px-6 py-12">
+    <div className="max-w-5xl mx-auto px-6 py-12">
       <div className="flex items-center justify-between mb-8">
         <h1 className="text-[32px]">Offers</h1>
-        <Link to="/admin/offers/new" className="btn-primary">
-          + New Offer
-        </Link>
+        <Link to="/admin/offers/new" className="btn-primary">+ New Offer</Link>
       </div>
       <div className="card overflow-hidden">
         <table className="w-full text-[14px]">
@@ -39,9 +37,6 @@ function AdminOffersList() {
             <tr>
               <th className="px-5 py-3">Title</th>
               <th className="px-5 py-3">Slug</th>
-              <th className="px-5 py-3">Category</th>
-              <th className="px-5 py-3">Featured</th>
-              <th className="px-5 py-3">Published</th>
               <th className="px-5 py-3 text-right">Actions</th>
             </tr>
           </thead>
@@ -49,27 +44,13 @@ function AdminOffersList() {
             {offers.map((o) => (
               <tr key={o.slug} className="border-t border-[var(--border)]">
                 <td className="px-5 py-3 font-medium text-[var(--brand)]">{o.title}</td>
-                <td className="px-5 py-3 text-[var(--text-secondary)] font-mono text-[12px]">
-                  {o.slug}
-                </td>
-                <td className="px-5 py-3 text-[var(--text-secondary)]">{o.category}</td>
-                <td className="px-5 py-3">
-                  {o.featured ? <span className="pill">Featured</span> : null}
-                </td>
-                <td className="px-5 py-3 text-[var(--text-secondary)]">{o.publishedAt}</td>
+                <td className="px-5 py-3 text-[var(--text-secondary)] font-mono text-[12px]">{o.slug}</td>
                 <td className="px-5 py-3 text-right whitespace-nowrap">
-                  <Link
-                    to="/admin/offers/$slug/edit"
-                    params={{ slug: o.slug }}
-                    className="text-[var(--accent)] font-medium hover:underline mr-4"
-                  >
-                    Edit
-                  </Link>
                   <Link
                     to="/offers/$slug"
                     params={{ slug: o.slug }}
                     target="_blank"
-                    className="text-[var(--text-secondary)] hover:underline mr-4"
+                    className="text-[var(--accent)] font-medium hover:underline mr-4"
                   >
                     View
                   </Link>
@@ -85,8 +66,8 @@ function AdminOffersList() {
             ))}
             {offers.length === 0 && (
               <tr>
-                <td colSpan={6} className="px-5 py-10 text-center text-[var(--text-secondary)]">
-                  No offers yet. Create the first one.
+                <td colSpan={3} className="px-5 py-10 text-center text-[var(--text-secondary)]">
+                  No offers yet. Paste your first HTML to create one.
                 </td>
               </tr>
             )}

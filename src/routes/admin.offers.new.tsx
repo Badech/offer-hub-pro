@@ -1,184 +1,148 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
-import { OfferForm, emptyOffer } from "@/components/admin/OfferForm";
-import { parseOfferBrief } from "@/lib/offer-brief-parser";
-import type { Offer } from "@/lib/offer-schema";
+import { OfferSchema } from "@/lib/offer-schema";
+import { createOffer } from "@/lib/server-functions";
 
 export const Route = createFileRoute("/admin/offers/new")({
   component: NewOfferPage,
 });
 
-// Helper text shown above the paste textarea — a one-line tour of what the
-// parser supports so the user knows the format.
-const BRIEF_HINT = `Paste a markdown brief structured like the example below. Section headings (## Title, ## Price From, ## Ingredient 1, etc.) are matched case-insensitively. Placeholders like "(Insert your hoplink)" or "(Upload product image)" are ignored. Anything missing is left blank for you to fill in.`;
-
-const EXAMPLE_BRIEF = `# Basics
-
-## Title
-Java Burn
-
-## Slug
-java-burn
-
-## Tagline
-The Coffee Ritual People Are Using To Support Fat Burning Naturally
-
-## Category
-Health & Wellness
-
-## Tags
-Weight Loss, Fat Burner, Coffee Additive
-
-## Vendor
-ClickBank
-
-## Affiliate URL
-https://your-hop-link.hop.clickbank.net
-
-## Published Date
-2026-05-21
-
-## Featured
-Enabled`;
+function slugify(s: string): string {
+  return s
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
 
 function NewOfferPage() {
-  const [step, setStep] = useState<"choose" | "paste" | "form">("choose");
-  const [initial, setInitial] = useState<Offer>(emptyOffer());
-  const [brief, setBrief] = useState("");
-  const [parseError, setParseError] = useState<string | null>(null);
+  const router = useRouter();
+  const [title, setTitle] = useState("");
+  const [slug, setSlug] = useState("");
+  const [affiliateUrl, setAffiliateUrl] = useState("");
+  const [html, setHtml] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
 
-  if (step === "form") {
-    return (
-      <div className="max-w-4xl mx-auto px-6 py-12">
-        <h1 className="text-[32px]">New Offer</h1>
-        <p className="mt-2 text-[var(--text-secondary)]">
-          Review what was parsed, upload images, and click Create when ready.
-        </p>
-        <OfferForm mode="create" initialOffer={initial} />
-      </div>
-    );
-  }
+  const onSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setBusy(true);
+    try {
+      const parsed = OfferSchema.parse({
+        slug: slug.trim() || slugify(title),
+        title: title.trim(),
+        affiliateUrl: affiliateUrl.trim(),
+        html,
+      });
+      await createOffer({ data: parsed });
+      await router.invalidate();
+      router.navigate({ to: "/admin" });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to create offer");
+    } finally {
+      setBusy(false);
+    }
+  };
 
-  if (step === "paste") {
-    const onParse = () => {
-      setParseError(null);
-      try {
-        const parsed = parseOfferBrief(brief);
-        if (!parsed.title.trim()) {
-          throw new Error(
-            "Couldn't find a Title in the brief. Make sure there's a `## Title` heading with the product name underneath.",
-          );
-        }
-        setInitial(parsed);
-        setStep("form");
-      } catch (err) {
-        setParseError(err instanceof Error ? err.message : "Couldn't parse the brief.");
-      }
-    };
+  return (
+    <div className="max-w-4xl mx-auto px-6 py-12">
+      <h1 className="text-[32px]">New Offer</h1>
+      <p className="mt-2 text-[var(--text-secondary)]">
+        Paste the full HTML for your offer page below. We render it verbatim at{" "}
+        <code>/offers/&lt;slug&gt;</code> and add our standard footer (Privacy / Terms /
+        Disclaimer / Contact + affiliate disclosure) at the bottom.
+      </p>
 
-    return (
-      <div className="max-w-4xl mx-auto px-6 py-12">
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <h1 className="text-[32px]">Paste your offer brief</h1>
-            <p className="mt-2 text-[var(--text-secondary)] max-w-2xl">{BRIEF_HINT}</p>
+      <form onSubmit={onSubmit} className="mt-8 space-y-6">
+        <fieldset className="card p-6 space-y-5">
+          <legend className="text-[18px] font-semibold text-[var(--brand)] px-2">Basics</legend>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Field label="Title (required)">
+              <input
+                required
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                className={inputCls}
+                placeholder="e.g. WaterSmartBox — NASA Leak"
+              />
+            </Field>
+            <Field label="Slug (auto from title if empty)">
+              <input
+                value={slug}
+                onChange={(e) => setSlug(e.target.value)}
+                className={inputCls}
+                placeholder="watersmart-box-leak"
+              />
+            </Field>
           </div>
-          <button
-            type="button"
-            onClick={() => setStep("choose")}
-            className="text-[13px] text-[var(--text-secondary)] hover:underline shrink-0 mt-2"
-          >
-            ← Back
-          </button>
-        </div>
+          <Field label="Affiliate URL (optional — for your own reference)">
+            <input
+              type="url"
+              value={affiliateUrl}
+              onChange={(e) => setAffiliateUrl(e.target.value)}
+              className={inputCls}
+              placeholder="https://your-hop-link.hop.clickbank.net"
+            />
+          </Field>
+        </fieldset>
 
-        <div className="mt-8 card p-0 overflow-hidden">
+        <fieldset className="card p-6 space-y-3">
+          <legend className="text-[18px] font-semibold text-[var(--brand)] px-2">HTML</legend>
+          <p className="text-[13px] text-[var(--text-secondary)]">
+            Paste the full HTML document (with <code>&lt;head&gt;</code>, <code>&lt;style&gt;</code>,
+            and <code>&lt;body&gt;</code>). We auto-extract the style and body content, strip
+            any <code>&lt;footer&gt;</code> in your HTML, and append our standard footer.
+          </p>
+          <p className="text-[12px] text-[var(--text-muted)]">
+            Note: inline <code>&lt;script&gt;</code> tags in pasted HTML do not execute (browser
+            security). External <code>&lt;script src=…&gt;</code> tags do load. Use CSS animations
+            for any motion.
+          </p>
           <textarea
-            value={brief}
-            onChange={(e) => setBrief(e.target.value)}
+            required
+            value={html}
+            onChange={(e) => setHtml(e.target.value)}
             spellCheck={false}
-            placeholder={EXAMPLE_BRIEF}
-            className="w-full min-h-[480px] p-5 font-mono text-[13px] leading-relaxed bg-white border-0 focus:outline-none resize-y"
+            placeholder="<!DOCTYPE html>&#10;<html lang=&quot;en&quot;>&#10;<head>&#10;  <style>...</style>&#10;</head>&#10;<body>&#10;  ...your offer page...&#10;</body>&#10;</html>"
+            className="w-full min-h-[480px] p-4 font-mono text-[12px] leading-relaxed border border-[var(--border)] rounded-md bg-white focus:outline-none focus:border-[var(--accent)] resize-y"
           />
-        </div>
+        </fieldset>
 
-        {parseError && (
+        {error && (
           <div
-            className="mt-4 rounded-md border border-[#fca5a5] bg-[#fef2f2] text-[#7f1d1d] text-[13px] p-3"
+            className="rounded-md border border-[#fca5a5] bg-[#fef2f2] text-[#7f1d1d] text-[13px] p-3"
             role="alert"
           >
-            {parseError}
+            {error}
           </div>
         )}
 
-        <div className="mt-6 flex flex-wrap items-center gap-3">
-          <button
-            type="button"
-            onClick={onParse}
-            disabled={!brief.trim()}
-            className="btn-primary disabled:opacity-50"
-          >
-            Parse and open form →
+        <div className="flex items-center gap-3 sticky bottom-0 bg-[var(--background)] border-t border-[var(--border)] py-4 -mx-6 px-6">
+          <button type="submit" disabled={busy} className="btn-primary disabled:opacity-50">
+            {busy ? "Creating…" : "Create offer"}
           </button>
           <button
             type="button"
-            onClick={() => {
-              setInitial(emptyOffer());
-              setStep("form");
-            }}
+            onClick={() => router.navigate({ to: "/admin" })}
             className="btn-ghost"
           >
-            Skip — start blank
+            Cancel
           </button>
-          <span className="text-[12px] text-[var(--text-muted)] ml-auto">
-            Images are added in the next step.
-          </span>
         </div>
-      </div>
-    );
-  }
+      </form>
+    </div>
+  );
+}
 
-  // step === "choose"
+const inputCls =
+  "mt-1 w-full border border-[var(--border)] rounded-md px-3 py-2 text-[14px] bg-white focus:outline-none focus:border-[var(--accent)]";
+
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="max-w-3xl mx-auto px-6 py-16">
-      <h1 className="text-[32px]">New Offer</h1>
-      <p className="mt-2 text-[var(--text-secondary)]">How would you like to start?</p>
-      <div className="mt-10 grid gap-5 sm:grid-cols-2">
-        <button
-          type="button"
-          onClick={() => setStep("paste")}
-          className="card p-6 text-left transition-all hover:-translate-y-0.5 hover:shadow-[0_4px_14px_rgba(0,0,0,0.10)]"
-        >
-          <div className="text-[var(--accent)] font-semibold">Paste a brief</div>
-          <h3 className="mt-2 text-[var(--brand)]">Markdown → pre-filled form</h3>
-          <p className="mt-3 text-[14px] text-[var(--text-secondary)] leading-relaxed">
-            Paste a structured markdown brief (the format below). Everything I can extract
-            — title, hero copy, ingredients, testimonials, FAQ, pricing, SEO — populates
-            the form automatically. You can edit anything after.
-          </p>
-          <div className="mt-5 text-[var(--accent)] text-[14px] font-medium">
-            Paste brief →
-          </div>
-        </button>
-        <button
-          type="button"
-          onClick={() => {
-            setInitial(emptyOffer());
-            setStep("form");
-          }}
-          className="card p-6 text-left transition-all hover:-translate-y-0.5 hover:shadow-[0_4px_14px_rgba(0,0,0,0.10)]"
-        >
-          <div className="text-[var(--text-secondary)] font-semibold">Start blank</div>
-          <h3 className="mt-2 text-[var(--brand)]">Empty form, fill manually</h3>
-          <p className="mt-3 text-[14px] text-[var(--text-secondary)] leading-relaxed">
-            Skip the paste step and go straight to a blank offer form. Best for quick
-            tests or if you don't have a brief written yet.
-          </p>
-          <div className="mt-5 text-[var(--text-secondary)] text-[14px] font-medium">
-            Open blank form →
-          </div>
-        </button>
-      </div>
+    <div>
+      <label className="block text-[13px] font-medium text-[var(--brand)]">{label}</label>
+      {children}
     </div>
   );
 }

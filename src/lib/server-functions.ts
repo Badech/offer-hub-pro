@@ -10,20 +10,12 @@ import {
   createOffer as dbCreateOffer,
   deleteOffer as dbDeleteOffer,
   getOfferBySlug as dbGetOfferBySlug,
-  listCategories as dbListCategories,
   listOffers as dbListOffers,
   updateOffer as dbUpdateOffer,
 } from "./db";
 import { OfferSchema, type Offer } from "./offer-schema";
 
-// `cookie`/header helpers come from start-server-core, re-exported by react-start/server.
-// Note: imports below are dynamic only when actually called in a handler, but the
-// TS-side import is static and fine.
-import {
-  deleteCookie,
-  getCookie,
-  setCookie,
-} from "@tanstack/react-start/server";
+import { deleteCookie, getCookie, setCookie } from "@tanstack/react-start/server";
 
 // ────────────────────────────────────────────────────────────────────────────
 // Public reads
@@ -42,12 +34,8 @@ export const fetchOfferBySlug = createServerFn({ method: "GET" })
     return await dbGetOfferBySlug(data);
   });
 
-export const fetchCategories = createServerFn({ method: "GET" }).handler(async () => {
-  return await dbListCategories();
-});
-
 // ────────────────────────────────────────────────────────────────────────────
-// Auth helpers
+// Auth
 // ────────────────────────────────────────────────────────────────────────────
 
 function requireAdmin() {
@@ -69,9 +57,7 @@ export const login = createServerFn({ method: "POST" })
     return { password: (d as { password: string }).password };
   })
   .handler(async ({ data }) => {
-    if (!verifyPassword(data.password)) {
-      throw new Error("Invalid password");
-    }
+    if (!verifyPassword(data.password)) throw new Error("Invalid password");
     setCookie(ADMIN_COOKIE_NAME, buildSessionCookieValue(), {
       path: "/",
       httpOnly: true,
@@ -121,35 +107,4 @@ export const deleteOffer = createServerFn({ method: "POST" })
     requireAdmin();
     await dbDeleteOffer(data);
     return { ok: true };
-  });
-
-// ────────────────────────────────────────────────────────────────────────────
-// Image upload via Vercel Blob
-// ────────────────────────────────────────────────────────────────────────────
-
-export const uploadImage = createServerFn({ method: "POST" })
-  .inputValidator((d: unknown) => {
-    if (!(d instanceof FormData)) throw new Error("Expected FormData");
-    const file = d.get("file");
-    if (!(file instanceof File)) throw new Error("Missing file field");
-    return { file };
-  })
-  .handler(async ({ data }): Promise<{ url: string }> => {
-    requireAdmin();
-    const token = process.env.BLOB_READ_WRITE_TOKEN;
-    if (!token) {
-      throw new Error(
-        "BLOB_READ_WRITE_TOKEN is not set. Create a Vercel Blob store and add the token to env vars.",
-      );
-    }
-    // Dynamic import keeps the heavy SDK out of the SSR graph until needed.
-    const { put } = await import("@vercel/blob");
-    const safeName = data.file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
-    const key = `offers/${Date.now()}-${safeName}`;
-    const blob = await put(key, data.file, {
-      access: "public",
-      token,
-      addRandomSuffix: true,
-    });
-    return { url: blob.url };
   });

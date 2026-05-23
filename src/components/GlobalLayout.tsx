@@ -4,7 +4,6 @@ import { Menu, X, Search } from "lucide-react";
 
 const navLinks = [
   { to: "/offers", label: "Top Offers" },
-  { to: "/categories", label: "Categories" },
   { to: "/how-we-review", label: "How We Review" },
   { to: "/about", label: "About" },
 ];
@@ -91,7 +90,7 @@ export function GlobalLayout({ children }: { children: React.ReactNode }) {
             links={[
               { to: "/", label: "Home" },
               { to: "/offers", label: "All Offers" },
-              { to: "/categories", label: "Categories" },
+              { to: "/search", label: "Search" },
             ]}
           />
           <FooterCol
@@ -108,6 +107,7 @@ export function GlobalLayout({ children }: { children: React.ReactNode }) {
               { to: "/privacy", label: "Privacy" },
               { to: "/terms", label: "Terms" },
               { to: "/disclosure", label: "Affiliate Disclosure" },
+              { to: "/disclaimer", label: "Disclaimer" },
             ]}
           />
         </div>

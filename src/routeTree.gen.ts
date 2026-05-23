@@ -16,18 +16,14 @@ import { Route as HowWeReviewRouteImport } from './routes/how-we-review'
 import { Route as DisclosureRouteImport } from './routes/disclosure'
 import { Route as DisclaimerRouteImport } from './routes/disclaimer'
 import { Route as ContactRouteImport } from './routes/contact'
-import { Route as CategoriesRouteImport } from './routes/categories'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as OffersIndexRouteImport } from './routes/offers.index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
-import { Route as PresellSlugRouteImport } from './routes/presell.$slug'
 import { Route as OffersSlugRouteImport } from './routes/offers.$slug'
-import { Route as CategoriesSlugRouteImport } from './routes/categories.$slug'
 import { Route as AdminLoginRouteImport } from './routes/admin.login'
 import { Route as AdminOffersNewRouteImport } from './routes/admin.offers.new'
-import { Route as AdminOffersSlugEditRouteImport } from './routes/admin.offers.$slug.edit'
 
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
@@ -64,11 +60,6 @@ const ContactRoute = ContactRouteImport.update({
   path: '/contact',
   getParentRoute: () => rootRouteImport,
 } as any)
-const CategoriesRoute = CategoriesRouteImport.update({
-  id: '/categories',
-  path: '/categories',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AdminRoute = AdminRouteImport.update({
   id: '/admin',
   path: '/admin',
@@ -94,20 +85,10 @@ const AdminIndexRoute = AdminIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AdminRoute,
 } as any)
-const PresellSlugRoute = PresellSlugRouteImport.update({
-  id: '/presell/$slug',
-  path: '/presell/$slug',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const OffersSlugRoute = OffersSlugRouteImport.update({
   id: '/offers/$slug',
   path: '/offers/$slug',
   getParentRoute: () => rootRouteImport,
-} as any)
-const CategoriesSlugRoute = CategoriesSlugRouteImport.update({
-  id: '/$slug',
-  path: '/$slug',
-  getParentRoute: () => CategoriesRoute,
 } as any)
 const AdminLoginRoute = AdminLoginRouteImport.update({
   id: '/login',
@@ -119,17 +100,11 @@ const AdminOffersNewRoute = AdminOffersNewRouteImport.update({
   path: '/offers/new',
   getParentRoute: () => AdminRoute,
 } as any)
-const AdminOffersSlugEditRoute = AdminOffersSlugEditRouteImport.update({
-  id: '/offers/$slug/edit',
-  path: '/offers/$slug/edit',
-  getParentRoute: () => AdminRoute,
-} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/admin': typeof AdminRouteWithChildren
-  '/categories': typeof CategoriesRouteWithChildren
   '/contact': typeof ContactRoute
   '/disclaimer': typeof DisclaimerRoute
   '/disclosure': typeof DisclosureRoute
@@ -138,18 +113,14 @@ export interface FileRoutesByFullPath {
   '/search': typeof SearchRoute
   '/terms': typeof TermsRoute
   '/admin/login': typeof AdminLoginRoute
-  '/categories/$slug': typeof CategoriesSlugRoute
   '/offers/$slug': typeof OffersSlugRoute
-  '/presell/$slug': typeof PresellSlugRoute
   '/admin/': typeof AdminIndexRoute
   '/offers/': typeof OffersIndexRoute
   '/admin/offers/new': typeof AdminOffersNewRoute
-  '/admin/offers/$slug/edit': typeof AdminOffersSlugEditRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
-  '/categories': typeof CategoriesRouteWithChildren
   '/contact': typeof ContactRoute
   '/disclaimer': typeof DisclaimerRoute
   '/disclosure': typeof DisclosureRoute
@@ -158,20 +129,16 @@ export interface FileRoutesByTo {
   '/search': typeof SearchRoute
   '/terms': typeof TermsRoute
   '/admin/login': typeof AdminLoginRoute
-  '/categories/$slug': typeof CategoriesSlugRoute
   '/offers/$slug': typeof OffersSlugRoute
-  '/presell/$slug': typeof PresellSlugRoute
   '/admin': typeof AdminIndexRoute
   '/offers': typeof OffersIndexRoute
   '/admin/offers/new': typeof AdminOffersNewRoute
-  '/admin/offers/$slug/edit': typeof AdminOffersSlugEditRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/admin': typeof AdminRouteWithChildren
-  '/categories': typeof CategoriesRouteWithChildren
   '/contact': typeof ContactRoute
   '/disclaimer': typeof DisclaimerRoute
   '/disclosure': typeof DisclosureRoute
@@ -180,13 +147,10 @@ export interface FileRoutesById {
   '/search': typeof SearchRoute
   '/terms': typeof TermsRoute
   '/admin/login': typeof AdminLoginRoute
-  '/categories/$slug': typeof CategoriesSlugRoute
   '/offers/$slug': typeof OffersSlugRoute
-  '/presell/$slug': typeof PresellSlugRoute
   '/admin/': typeof AdminIndexRoute
   '/offers/': typeof OffersIndexRoute
   '/admin/offers/new': typeof AdminOffersNewRoute
-  '/admin/offers/$slug/edit': typeof AdminOffersSlugEditRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -194,7 +158,6 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/admin'
-    | '/categories'
     | '/contact'
     | '/disclaimer'
     | '/disclosure'
@@ -203,18 +166,14 @@ export interface FileRouteTypes {
     | '/search'
     | '/terms'
     | '/admin/login'
-    | '/categories/$slug'
     | '/offers/$slug'
-    | '/presell/$slug'
     | '/admin/'
     | '/offers/'
     | '/admin/offers/new'
-    | '/admin/offers/$slug/edit'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/about'
-    | '/categories'
     | '/contact'
     | '/disclaimer'
     | '/disclosure'
@@ -223,19 +182,15 @@ export interface FileRouteTypes {
     | '/search'
     | '/terms'
     | '/admin/login'
-    | '/categories/$slug'
     | '/offers/$slug'
-    | '/presell/$slug'
     | '/admin'
     | '/offers'
     | '/admin/offers/new'
-    | '/admin/offers/$slug/edit'
   id:
     | '__root__'
     | '/'
     | '/about'
     | '/admin'
-    | '/categories'
     | '/contact'
     | '/disclaimer'
     | '/disclosure'
@@ -244,20 +199,16 @@ export interface FileRouteTypes {
     | '/search'
     | '/terms'
     | '/admin/login'
-    | '/categories/$slug'
     | '/offers/$slug'
-    | '/presell/$slug'
     | '/admin/'
     | '/offers/'
     | '/admin/offers/new'
-    | '/admin/offers/$slug/edit'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
   AdminRoute: typeof AdminRouteWithChildren
-  CategoriesRoute: typeof CategoriesRouteWithChildren
   ContactRoute: typeof ContactRoute
   DisclaimerRoute: typeof DisclaimerRoute
   DisclosureRoute: typeof DisclosureRoute
@@ -266,7 +217,6 @@ export interface RootRouteChildren {
   SearchRoute: typeof SearchRoute
   TermsRoute: typeof TermsRoute
   OffersSlugRoute: typeof OffersSlugRoute
-  PresellSlugRoute: typeof PresellSlugRoute
   OffersIndexRoute: typeof OffersIndexRoute
 }
 
@@ -321,13 +271,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ContactRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/categories': {
-      id: '/categories'
-      path: '/categories'
-      fullPath: '/categories'
-      preLoaderRoute: typeof CategoriesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/admin': {
       id: '/admin'
       path: '/admin'
@@ -363,26 +306,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminIndexRouteImport
       parentRoute: typeof AdminRoute
     }
-    '/presell/$slug': {
-      id: '/presell/$slug'
-      path: '/presell/$slug'
-      fullPath: '/presell/$slug'
-      preLoaderRoute: typeof PresellSlugRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/offers/$slug': {
       id: '/offers/$slug'
       path: '/offers/$slug'
       fullPath: '/offers/$slug'
       preLoaderRoute: typeof OffersSlugRouteImport
       parentRoute: typeof rootRouteImport
-    }
-    '/categories/$slug': {
-      id: '/categories/$slug'
-      path: '/$slug'
-      fullPath: '/categories/$slug'
-      preLoaderRoute: typeof CategoriesSlugRouteImport
-      parentRoute: typeof CategoriesRoute
     }
     '/admin/login': {
       id: '/admin/login'
@@ -398,13 +327,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminOffersNewRouteImport
       parentRoute: typeof AdminRoute
     }
-    '/admin/offers/$slug/edit': {
-      id: '/admin/offers/$slug/edit'
-      path: '/offers/$slug/edit'
-      fullPath: '/admin/offers/$slug/edit'
-      preLoaderRoute: typeof AdminOffersSlugEditRouteImport
-      parentRoute: typeof AdminRoute
-    }
   }
 }
 
@@ -412,35 +334,20 @@ interface AdminRouteChildren {
   AdminLoginRoute: typeof AdminLoginRoute
   AdminIndexRoute: typeof AdminIndexRoute
   AdminOffersNewRoute: typeof AdminOffersNewRoute
-  AdminOffersSlugEditRoute: typeof AdminOffersSlugEditRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
   AdminLoginRoute: AdminLoginRoute,
   AdminIndexRoute: AdminIndexRoute,
   AdminOffersNewRoute: AdminOffersNewRoute,
-  AdminOffersSlugEditRoute: AdminOffersSlugEditRoute,
 }
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
-
-interface CategoriesRouteChildren {
-  CategoriesSlugRoute: typeof CategoriesSlugRoute
-}
-
-const CategoriesRouteChildren: CategoriesRouteChildren = {
-  CategoriesSlugRoute: CategoriesSlugRoute,
-}
-
-const CategoriesRouteWithChildren = CategoriesRoute._addFileChildren(
-  CategoriesRouteChildren,
-)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
   AdminRoute: AdminRouteWithChildren,
-  CategoriesRoute: CategoriesRouteWithChildren,
   ContactRoute: ContactRoute,
   DisclaimerRoute: DisclaimerRoute,
   DisclosureRoute: DisclosureRoute,
@@ -449,7 +356,6 @@ const rootRouteChildren: RootRouteChildren = {
   SearchRoute: SearchRoute,
   TermsRoute: TermsRoute,
   OffersSlugRoute: OffersSlugRoute,
-  PresellSlugRoute: PresellSlugRoute,
   OffersIndexRoute: OffersIndexRoute,
 }
 export const routeTree = rootRouteImport
