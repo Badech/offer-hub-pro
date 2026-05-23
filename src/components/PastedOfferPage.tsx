@@ -44,8 +44,13 @@ export function PastedOfferPage({ offer }: { offer: Offer }) {
              vertical space so the footer is pushed to the bottom.
       */}
       <style>{`
+        /* Reset viewport-locking CSS that pasted briefs use to enforce
+           mobile-bottle layouts. Without these resets, anything below the
+           main viewport (like our footer) gets clipped or pushed off-
+           screen. */
         html, body {
           height: auto !important;
+          min-height: 0 !important;
           overflow: visible !important;
         }
         body {
@@ -53,8 +58,23 @@ export function PastedOfferPage({ offer }: { offer: Offer }) {
           flex-direction: column !important;
           min-height: 100vh !important;
         }
+        /* Our content wrapper takes all remaining vertical space so the
+           footer is naturally pushed to the bottom. */
         .osl-content {
           flex: 1 0 auto;
+          display: flex;
+          flex-direction: column;
+        }
+        /* Strip the 100vh / 100dvh / 100% height constraint off the
+           pasted top-level layout container. Briefs commonly use
+           '.page { height: 100vh }' to fill the screen, which leaves no
+           room for our footer below. Forcing min-height instead of
+           fixed-height lets the container be ALL of the viewport when
+           content is short, but auto-grow taller when content overflows. */
+        .osl-content > * {
+          height: auto !important;
+          min-height: 0 !important;
+          flex: 1 0 auto !important;
         }
       `}</style>
       <div
