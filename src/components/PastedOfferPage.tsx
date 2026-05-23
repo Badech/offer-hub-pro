@@ -27,20 +27,38 @@ export function PastedOfferPage({ offer }: { offer: Offer }) {
       {styles && <style dangerouslySetInnerHTML={{ __html: styles }} />}
       {/*
         OVERRIDE STYLE — applied AFTER the pasted <style> so it wins the
-        specificity tie. Pasted briefs sometimes set:
-          html, body { height: 100%; overflow: hidden; }
-        which clips everything below the first viewport — including our
-        appended footer. Resetting these two properties guarantees the
-        footer is always visible without disturbing the pasted CSS
-        otherwise (it still owns colours, fonts, layout, etc.).
+        specificity tie. Three rules:
+          1. html, body { height: auto; overflow: visible }
+             — pasted briefs sometimes set height:100%; overflow:hidden;
+             to enforce mobile-bottle layouts. That clips our footer.
+             Reset so the document scrolls normally.
+          2. body { display: flex; flex-direction: column; min-height: 100vh }
+             — classic sticky-footer pattern. Combined with the
+             .osl-content wrapper getting flex: 1, this guarantees
+             the footer sits at the bottom of the VIEWPORT on tall
+             screens (when content is short), and falls in line at
+             the end of the content on short screens (when content
+             overflows the viewport).
+          3. .osl-content { flex: 1 0 auto }
+             — wrapper around the pasted body takes all remaining
+             vertical space so the footer is pushed to the bottom.
       */}
       <style>{`
         html, body {
           height: auto !important;
           overflow: visible !important;
         }
+        body {
+          display: flex !important;
+          flex-direction: column !important;
+          min-height: 100vh !important;
+        }
+        .osl-content {
+          flex: 1 0 auto;
+        }
       `}</style>
       <div
+        className="osl-content"
         // The pasted HTML is admin-authored content — we trust it by design,
         // since only the authenticated /admin user can paste it.
         dangerouslySetInnerHTML={{ __html: body }}
