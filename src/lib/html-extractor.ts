@@ -8,9 +8,9 @@
 //   4. Strip inline <script> tags (dangerouslySetInnerHTML doesn't execute
 //      them, see PastedOfferPage.tsx for caveat docs).
 //   5. Rewrite ALL <a href> links:
-//       - Same-domain (offersendly.com) and root-relative links → keep as-is
+//       - Same-domain (onlineonsale.com) and root-relative links → keep as-is
 //       - Pure anchor links (#foo) → keep as-is
-//       - mailto:* → mailto:support@offersendly.com
+//       - mailto:* → mailto:support@onlineonsale.com
 //       - tel:* → keep as-is (less impactful)
 //       - Everything else (external https, hoplinks, etc.) → replace with
 //         the offer's affiliateUrl. If no affiliateUrl set, leave alone.
@@ -39,8 +39,8 @@ const IMAGE_PLACEHOLDER_RE = /\{\{\s*image\s*\}\}/gi;
  * Domain we consider "our own" — links pointing here are preserved instead of
  * being rewritten to the affiliate URL.
  */
-const OWN_DOMAIN = "offersendly.com";
-const CONTACT_EMAIL = "support@offersendly.com";
+const OWN_DOMAIN = "onlineonsale.com";
+const CONTACT_EMAIL = "support@onlineonsale.com";
 
 export function extractOfferHtml(input: string, opts: ExtractOptions = {}): ExtractedHtml {
   if (!input || !input.trim()) return { styles: "", body: "" };
@@ -104,7 +104,7 @@ function rewriteOneLink(href: string, affiliateUrl: string): string {
   // legitimate (e.g. support hotlines) and there's no equivalent on our side.
   if (/^tel:/i.test(href)) return href;
 
-  // Same-domain links (offersendly.com) → preserve
+  // Same-domain links (onlineonsale.com) → preserve
   try {
     const u = new URL(href, "https://example.com/"); // base for protocol-relative parsing
     if (u.hostname === OWN_DOMAIN || u.hostname === `www.${OWN_DOMAIN}`) {

@@ -12,7 +12,7 @@ export const Route = createFileRoute("/admin")({
   },
   head: () => ({
     meta: [
-      { title: "Admin — OfferSendly" },
+      { title: "Admin — OnlineOnSale" },
       { name: "robots", content: "noindex,nofollow" },
     ],
   }),
@@ -33,7 +33,7 @@ function AdminLayout() {
         <header className="section-dark">
           <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
             <Link to="/admin" className="font-semibold text-white text-[15px]">
-              OfferSendly Admin
+              OnlineOnSale Admin
             </Link>
             <div className="flex items-center gap-4 text-[14px]">
               <Link to="/admin" className="text-white/80 hover:text-white">

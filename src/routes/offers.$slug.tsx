@@ -13,14 +13,14 @@ export const Route = createFileRoute("/offers/$slug")({
   head: ({ loaderData }) => {
     const o = loaderData?.offer;
     if (!o) return {};
-    const canonical = `https://offersendly.com/offers/${o.slug}`;
+    const canonical = `https://onlineonsale.com/offers/${o.slug}`;
     return {
       meta: [
         { title: o.title },
         { property: "og:title", content: o.title },
         { property: "og:url", content: canonical },
         { property: "og:type", content: "article" },
-        { property: "og:site_name", content: "OfferSendly" },
+        { property: "og:site_name", content: "OnlineOnSale" },
         { name: "twitter:card", content: "summary_large_image" },
         { name: "twitter:title", content: o.title },
       ],

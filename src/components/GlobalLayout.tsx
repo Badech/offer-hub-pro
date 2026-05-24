@@ -16,7 +16,7 @@ export function GlobalLayout({ children }: { children: React.ReactNode }) {
       <header className="sticky top-0 z-40 bg-white/90 backdrop-blur border-b border-[var(--border)]">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <Link to="/" className="text-[20px] font-semibold text-[var(--accent)] tracking-tight">
-            OfferSendly
+            OnlineOnSale
           </Link>
           <nav className="hidden md:flex items-center gap-8">
             {navLinks.map((l) => (
@@ -80,7 +80,7 @@ export function GlobalLayout({ children }: { children: React.ReactNode }) {
       <footer className="bg-[var(--surface)] border-t border-[var(--border)] mt-24">
         <div className="max-w-7xl mx-auto px-6 py-16 grid grid-cols-2 md:grid-cols-4 gap-10">
           <div>
-            <div className="text-[var(--accent)] font-semibold text-[18px]">OfferSendly</div>
+            <div className="text-[var(--accent)] font-semibold text-[18px]">OnlineOnSale</div>
             <p className="text-[14px] text-[var(--text-secondary)] mt-3 leading-relaxed">
               Curated offers. Honest reviews. One click to get started.
             </p>
@@ -112,7 +112,7 @@ export function GlobalLayout({ children }: { children: React.ReactNode }) {
           />
         </div>
         <div className="border-t border-[var(--border)] py-6 px-6 text-[13px] text-[var(--text-muted)] text-center">
-          © 2026 OfferSendly · All rights reserved · Disclosure: OfferSendly earns commissions from
+          © 2026 OnlineOnSale · All rights reserved · Disclosure: OnlineOnSale earns commissions from
           purchases made through links on this site.
         </div>
       </footer>

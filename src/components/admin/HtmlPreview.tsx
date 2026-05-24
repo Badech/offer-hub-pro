@@ -4,7 +4,7 @@ import { extractOfferHtml } from "@/lib/html-extractor";
 // ────────────────────────────────────────────────────────────────────────────
 // HtmlPreview — live preview of how a pasted-HTML offer will render. Uses
 // the SAME extractOfferHtml pipeline as the public route, so the preview is
-// byte-for-byte what visitors get (modulo the OfferSendly footer, which we
+// byte-for-byte what visitors get (modulo the OnlineOnSale footer, which we
 // stub here with a small placeholder note since rendering React links inside
 // an iframe srcdoc is more trouble than it's worth).
 //
@@ -121,7 +121,7 @@ function ViewportButton({
 // Build the complete HTML document we hand to the iframe. Re-uses the
 // extractor so the preview matches production behaviour 1:1 — same link
 // rewriting, same {{image}} swap, same <footer> stripping. We append a
-// stub footer note (instead of the real React OfferSendlyFooter) because
+// stub footer note (instead of the real React OnlineOnSaleFooter) because
 // rendering React inside iframe srcdoc is not worth the complexity for
 // a preview.
 // ────────────────────────────────────────────────────────────────────────────
@@ -132,7 +132,7 @@ function buildPreviewDocument(html: string, affiliateUrl: string, imageUrl: stri
   const footerStub = `
     <footer style="background:#080807;padding:32px 24px;text-align:center;font-size:12px;color:rgba(255,255,255,0.4);line-height:1.7;font-family:system-ui,sans-serif;margin-top:0;">
       <div style="max-width:820px;margin:0 auto;">
-        <p>© ${new Date().getFullYear()} <strong style="color:rgba(255,255,255,0.7);">OfferSendly</strong> · Privacy Policy · Terms · Disclaimer · Contact</p>
+        <p>© ${new Date().getFullYear()} <strong style="color:rgba(255,255,255,0.7);">OnlineOnSale</strong> · Privacy Policy · Terms · Disclaimer · Contact</p>
         <p style="margin-top:10px;max-width:720px;margin:10px auto 0;">
           This page contains affiliate links. (Legal disclosure appears here on the live page.)
         </p>

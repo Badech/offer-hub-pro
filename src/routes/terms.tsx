@@ -4,10 +4,10 @@ import { H3, LegalPage } from "@/components/LegalPage";
 export const Route = createFileRoute("/terms")({
   head: () => ({
     meta: [
-      { title: "Terms of Use — OfferSendly" },
-      { name: "description", content: "Terms that govern your use of offersendly.com." },
+      { title: "Terms of Use — OnlineOnSale" },
+      { name: "description", content: "Terms that govern your use of onlineonsale.com." },
     ],
-    links: [{ rel: "canonical", href: "https://offersendly.com/terms" }],
+    links: [{ rel: "canonical", href: "https://onlineonsale.com/terms" }],
   }),
   component: TermsPage,
 });
@@ -16,21 +16,21 @@ function TermsPage() {
   return (
     <LegalPage title="Terms of Use" lastUpdated="May 2026">
       <p>
-        By accessing and using <strong>offersendly.com</strong> ("Site"), you agree to be
+        By accessing and using <strong>onlineonsale.com</strong> ("Site"), you agree to be
         bound by these Terms of Use. If you do not agree, please do not use this Site.
       </p>
 
       <H3>Purpose of This Site</H3>
       <p>
         This Site is an independent advertising and review page. It is not the official
-        website of any product or merchant featured here. The purpose of OfferSendly is to
+        website of any product or merchant featured here. The purpose of OnlineOnSale is to
         provide information and direct interested visitors to third-party product offers
         we believe represent good value.
       </p>
 
       <H3>Affiliate Relationship</H3>
       <p>
-        OfferSendly participates in the ClickBank affiliate program and may participate in
+        OnlineOnSale participates in the ClickBank affiliate program and may participate in
         other affiliate networks. When you click a link and make a purchase, we may earn a
         commission. This does not affect the price you pay.
       </p>
