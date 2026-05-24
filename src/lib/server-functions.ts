@@ -110,9 +110,28 @@ export const deleteOffer = createServerFn({ method: "POST" })
   });
 
 // ────────────────────────────────────────────────────────────────────────────
-// Image upload — Vercel Blob, auth-gated. Returns a public URL the admin can
-// paste back into the offer's imageUrl field (or that the upload widget can
-// populate automatically).
+// Image upload — Cloudflare R2, auth-gated. Returns the public R2 URL the
+// admin can paste back into the offer's imageUrl field (or that the upload
+// widget populates automatically).
+//
+// R2 SETUP (do this once in Cloudflare dashboard):
+//   1. R2 → Create bucket → name it (e.g. "onlineonsale")
+//   2. Settings → Public Access → Allow Access. Cloudflare will assign a
+//      URL like https://pub-xxxxx.r2.dev/  — that's R2_PUBLIC_BASE_URL.
+//      (Optionally bind a custom domain like images.onlineonsale.com.)
+//   3. Manage R2 API Tokens → Create API Token → Object Read & Write
+//      scoped to this bucket. Copy the Access Key ID + Secret.
+//   4. Add to Vercel env:
+//        R2_ACCOUNT_ID       — from R2 dashboard URL or any token page
+//        R2_ACCESS_KEY_ID    — from step 3
+//        R2_SECRET_ACCESS_KEY — from step 3
+//        R2_BUCKET           — bucket name from step 1
+//        R2_PUBLIC_BASE_URL  — from step 2 (no trailing slash)
+//
+// R2 free tier: 10 GB storage + UNLIMITED egress bandwidth. Charges only
+// kick in past 10 GB stored, at $0.015/GB/month. Reads & writes have free
+// monthly quotas (10M reads, 1M writes) that are very hard to exceed for
+// affiliate site image traffic.
 // ────────────────────────────────────────────────────────────────────────────
 
 export const uploadImage = createServerFn({ method: "POST" })
@@ -124,20 +143,50 @@ export const uploadImage = createServerFn({ method: "POST" })
   })
   .handler(async ({ data }): Promise<{ url: string }> => {
     requireAdmin();
-    const token = process.env.BLOB_READ_WRITE_TOKEN;
-    if (!token) {
+    const accountId = process.env.R2_ACCOUNT_ID;
+    const accessKeyId = process.env.R2_ACCESS_KEY_ID;
+    const secretAccessKey = process.env.R2_SECRET_ACCESS_KEY;
+    const bucket = process.env.R2_BUCKET;
+    const publicBaseUrl = process.env.R2_PUBLIC_BASE_URL;
+    if (!accountId || !accessKeyId || !secretAccessKey || !bucket || !publicBaseUrl) {
       throw new Error(
-        "BLOB_READ_WRITE_TOKEN is not set. Create a Vercel Blob store and add the token to env vars.",
+        "R2 env vars not configured. Set R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET, and R2_PUBLIC_BASE_URL.",
       );
     }
-    // Dynamic import keeps the heavy SDK out of the SSR graph until needed.
-    const { put } = await import("@vercel/blob");
+
+    // Dynamic import keeps the heavy AWS SDK out of the SSR graph until
+    // an actual upload is requested.
+    const { S3Client, PutObjectCommand } = await import("@aws-sdk/client-s3");
+
+    // Build a unique object key — timestamp + random suffix + safe filename
+    // so two uploads of the same file don't collide.
     const safeName = data.file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
-    const key = `offers/${Date.now()}-${safeName}`;
-    const blob = await put(key, data.file, {
-      access: "public",
-      token,
-      addRandomSuffix: true,
+    const suffix = Math.random().toString(36).slice(2, 8);
+    const key = `offers/${Date.now()}-${suffix}-${safeName}`;
+
+    const client = new S3Client({
+      region: "auto",
+      endpoint: `https://${accountId}.r2.cloudflarestorage.com`,
+      credentials: { accessKeyId, secretAccessKey },
     });
-    return { url: blob.url };
+
+    // PutObjectCommand needs a Uint8Array / Buffer, not a Web File.
+    const buffer = new Uint8Array(await data.file.arrayBuffer());
+
+    await client.send(
+      new PutObjectCommand({
+        Bucket: bucket,
+        Key: key,
+        Body: buffer,
+        ContentType: data.file.type || "application/octet-stream",
+        // Cache-Control: serve from CDN edge for a year (images are
+        // content-addressed via the random suffix in the key, so stale
+        // cache is never an issue).
+        CacheControl: "public, max-age=31536000, immutable",
+      }),
+    );
+
+    // Strip trailing slash from base URL, then build the public URL.
+    const base = publicBaseUrl.replace(/\/+$/, "");
+    return { url: `${base}/${key}` };
   });

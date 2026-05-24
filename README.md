@@ -25,7 +25,13 @@ On first DB connection, the `offers` table is created and the 5 starter offers (
 | `DATABASE_URL` | Neon dashboard → your project → connection string (use the **pooled** one) |
 | `ADMIN_PASSWORD` | Your choice — this is the password you type into `/admin/login` |
 | `AUTH_SECRET` | Generate with `openssl rand -hex 32`. Signs the admin session cookie. |
-| `BLOB_READ_WRITE_TOKEN` | Vercel project → Storage → Blob store → Settings → token |
+| `R2_ACCOUNT_ID` | Cloudflare dashboard → R2 → the URL shows your account ID, or any API token page |
+| `R2_ACCESS_KEY_ID` | Cloudflare R2 → Manage R2 API Tokens → Create (Object Read & Write) |
+| `R2_SECRET_ACCESS_KEY` | Same token creation step |
+| `R2_BUCKET` | Name of the bucket you created in Cloudflare R2 |
+| `R2_PUBLIC_BASE_URL` | Bucket Settings → Public Access → the `pub-xxxxx.r2.dev` URL Cloudflare assigns (no trailing slash) |
+
+**Why R2 instead of Vercel Blob:** 10 GB free storage (vs Vercel's 1 GB), **unlimited free egress bandwidth** (Vercel charges $0.15/GB past quota), S3-compatible API.
 
 Set all four in:
 1. `.env.local` (for local dev — never commit)
