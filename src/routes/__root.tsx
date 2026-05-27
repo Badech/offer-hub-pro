@@ -109,7 +109,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 });
 
 // Meta Pixel ID. If you ever rotate it, change it here and nowhere else.
-const META_PIXEL_ID = "1649617766249563";
+const META_PIXEL_ID = import.meta.env.VITE_META_PIXEL_ID ?? "1649617766249563";
+if (!import.meta.env.VITE_META_PIXEL_ID) {
+  // Visible in dev only; in production we expect VITE_META_PIXEL_ID set in Vercel
+  console.warn("VITE_META_PIXEL_ID missing; using default hardcoded ID.");
+}
 
 // Meta-supplied Pixel snippet. Rendered directly into <head> via
 // dangerouslySetInnerHTML so Meta Pixel Helper and Meta's crawler can
