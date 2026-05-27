@@ -174,8 +174,8 @@ export function OfferForm({
                 placeholder="https://your-hop-link.hop.clickbank.net"
               />
               <p className="mt-1 text-[11px] text-[var(--text-muted)]">
-                <code>mailto:</code> → <code>support@onlineonsale.com</code>. Anchors
-                (<code>#faq</code>) and links to <code>onlineonsale.com</code> preserved.
+                <code>mailto:</code> → <code>support@offersendly.com</code>. Anchors
+                (<code>#faq</code>) and links to <code>offersendly.com</code> preserved.
               </p>
             </Field>
             <Field label="Image (replaces {{image}} placeholder in HTML)">

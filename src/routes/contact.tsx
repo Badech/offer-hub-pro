@@ -4,10 +4,10 @@ import { H3, LegalPage } from "@/components/LegalPage";
 export const Route = createFileRoute("/contact")({
   head: () => ({
     meta: [
-      { title: "Contact — OnlineOnSale" },
-      { name: "description", content: "Reach the OnlineOnSale team for editorial, privacy, or ad-related enquiries." },
+      { title: "Contact — OfferSendly" },
+      { name: "description", content: "Reach the OfferSendly team for editorial, privacy, or ad-related enquiries." },
     ],
-    links: [{ rel: "canonical", href: "https://onlineonsale.com/contact" }],
+    links: [{ rel: "canonical", href: "https://offersendly.com/contact" }],
   }),
   component: ContactPage,
 });
@@ -16,13 +16,13 @@ function ContactPage() {
   return (
     <LegalPage title="Contact Us">
       <p>
-        We're happy to help with any questions about <strong>onlineonsale.com</strong>, the
+        We're happy to help with any questions about <strong>offersendly.com</strong>, the
         products featured here, or our advertising and affiliate practices.
       </p>
 
       <H3>General Inquiries</H3>
       <p>
-        Email: <a href="mailto:support@onlineonsale.com">support@onlineonsale.com</a>
+        Email: <a href="mailto:support@offersendly.com">support@offersendly.com</a>
       </p>
 
       <H3>Product Support</H3>
@@ -45,7 +45,7 @@ function ContactPage() {
       <p>
         If you reached one of our pages through a Facebook or Instagram ad and have a
         question about the ad itself, please email{" "}
-        <a href="mailto:support@onlineonsale.com">support@onlineonsale.com</a> with the
+        <a href="mailto:support@offersendly.com">support@offersendly.com</a> with the
         subject line <em>"Ad Enquiry"</em>.
       </p>
 

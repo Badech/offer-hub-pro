@@ -1,4 +1,4 @@
-# OnlineOnSale
+# OfferSendly
 
 Curated affiliate offers + bespoke conversion landing pages.
 **Stack:** TanStack Start · React 19 · Tailwind 4 · Neon Postgres · Vercel Blob · deployed on Vercel.

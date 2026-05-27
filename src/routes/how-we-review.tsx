@@ -4,8 +4,8 @@ import { GlobalLayout } from "@/components/GlobalLayout";
 export const Route = createFileRoute("/how-we-review")({
   head: () => ({
     meta: [
-      { title: "How We Review — OnlineOnSale" },
-      { name: "description", content: "The evaluation process every offer goes through before it appears on OnlineOnSale." },
+      { title: "How We Review — OfferSendly" },
+      { name: "description", content: "The evaluation process every offer goes through before it appears on OfferSendly." },
     ],
   }),
   component: HowWeReviewPage,
@@ -17,7 +17,7 @@ function HowWeReviewPage() {
       <article className="max-w-3xl mx-auto px-6 py-20">
         <h1>How We Review</h1>
         <p className="mt-6 text-[18px] text-[var(--text-secondary)] leading-relaxed">
-          A short, honest look at what an offer has to clear before it appears on OnlineOnSale.
+          A short, honest look at what an offer has to clear before it appears on OfferSendly.
         </p>
 
         <h2 className="mt-14">Our evaluation criteria</h2>

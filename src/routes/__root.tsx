@@ -53,21 +53,21 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "OnlineOnSale — Curated offers. Honest reviews." },
+      { title: "OfferSendly — Curated offers. Honest reviews." },
       {
         name: "description",
         content:
           "Curated offers and honest reviews across health, finance, fitness, and lifestyle — only what's worth your money.",
       },
-      { property: "og:title", content: "OnlineOnSale — Curated offers. Honest reviews." },
+      { property: "og:title", content: "OfferSendly — Curated offers. Honest reviews." },
       {
         property: "og:description",
         content:
           "Curated offers and honest reviews across health, finance, fitness, and lifestyle — only what's worth your money.",
       },
       { property: "og:type", content: "website" },
-      { property: "og:site_name", content: "OnlineOnSale" },
-      { property: "og:url", content: "https://onlineonsale.com/" },
+      { property: "og:site_name", content: "OfferSendly" },
+      { property: "og:url", content: "https://offersendly.com/" },
       { name: "twitter:card", content: "summary_large_image" },
       // Meta (Facebook) Business domain ownership verification. Required on
       // every page so the crawler can hit any URL and find it.
@@ -75,8 +75,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         name: "facebook-domain-verification",
         content: "9odni0rlx7hf6pryalzo1cr88wnr9g",
       },
-      { name: "twitter:site", content: "@onlineonsale" },
-      { name: "twitter:title", content: "OnlineOnSale — Curated offers. Honest reviews." },
+      { name: "twitter:site", content: "@offersendly" },
+      { name: "twitter:title", content: "OfferSendly — Curated offers. Honest reviews." },
       {
         name: "twitter:description",
         content:
@@ -84,7 +84,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       },
     ],
     links: [
-      { rel: "canonical", href: "https://onlineonsale.com/" },
+      { rel: "canonical", href: "https://offersendly.com/" },
       { rel: "stylesheet", href: appCss },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },

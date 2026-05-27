@@ -118,7 +118,7 @@ export const deleteOffer = createServerFn({ method: "POST" })
 //   1. R2 → Create bucket → name it (e.g. "onlineonsale")
 //   2. Settings → Public Access → Allow Access. Cloudflare will assign a
 //      URL like https://pub-xxxxx.r2.dev/  — that's R2_PUBLIC_BASE_URL.
-//      (Optionally bind a custom domain like images.onlineonsale.com.)
+//      (Optionally bind a custom domain like images.offersendly.com.)
 //   3. Manage R2 API Tokens → Create API Token → Object Read & Write
 //      scoped to this bucket. Copy the Access Key ID + Secret.
 //   4. Add to Vercel env:

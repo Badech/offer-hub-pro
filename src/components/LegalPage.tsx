@@ -17,7 +17,7 @@ export function LegalPage({
       <header className="border-b border-[var(--border)]">
         <div className="max-w-3xl mx-auto px-6 h-14 flex items-center justify-between">
           <Link to="/" className="font-semibold text-[var(--brand)]">
-            OnlineOnSale
+            OfferSendly
           </Link>
           <Link to="/" className="text-[13px] text-[var(--text-secondary)] hover:underline">
             ← Home
@@ -43,7 +43,7 @@ export function LegalPage({
             <Link to="/disclaimer" className="hover:underline">Disclaimer</Link>
             <Link to="/contact" className="hover:underline">Contact</Link>
           </div>
-          <p className="mt-3">© {new Date().getFullYear()} OnlineOnSale</p>
+          <p className="mt-3">© {new Date().getFullYear()} OfferSendly</p>
         </div>
       </footer>
     </div>

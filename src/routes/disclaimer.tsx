@@ -4,10 +4,10 @@ import { H3, LegalPage } from "@/components/LegalPage";
 export const Route = createFileRoute("/disclaimer")({
   head: () => ({
     meta: [
-      { title: "Disclaimer — OnlineOnSale" },
-      { name: "description", content: "Advertising disclosure, results disclaimer, and FDA statements for OnlineOnSale." },
+      { title: "Disclaimer — OfferSendly" },
+      { name: "description", content: "Advertising disclosure, results disclaimer, and FDA statements for OfferSendly." },
     ],
-    links: [{ rel: "canonical", href: "https://onlineonsale.com/disclaimer" }],
+    links: [{ rel: "canonical", href: "https://offersendly.com/disclaimer" }],
   }),
   component: DisclaimerPage,
 });
@@ -17,7 +17,7 @@ function DisclaimerPage() {
     <LegalPage title="Disclaimer" lastUpdated="May 2026">
       <H3>Advertising Disclosure</H3>
       <p>
-        <strong>onlineonsale.com</strong> is an advertising website. The owner is an affiliate
+        <strong>offersendly.com</strong> is an advertising website. The owner is an affiliate
         of the products featured on this Site and may receive compensation when you click
         links and make a purchase.
       </p>

@@ -5,8 +5,8 @@ import { fetchOffers } from "@/lib/server-functions";
 export const Route = createFileRoute("/offers/")({
   head: () => ({
     meta: [
-      { title: "All Offers — OnlineOnSale" },
-      { name: "description", content: "Every offer in the OnlineOnSale directory." },
+      { title: "All Offers — OfferSendly" },
+      { name: "description", content: "Every offer in the OfferSendly directory." },
     ],
   }),
   staleTime: 0,

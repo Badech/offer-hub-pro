@@ -2,13 +2,13 @@ import { createFileRoute } from "@tanstack/react-router";
 import { GlobalLayout } from "@/components/GlobalLayout";
 
 export const Route = createFileRoute("/disclosure")({
-  head: () => ({ meta: [{ title: "Affiliate Disclosure — OnlineOnSale" }] }),
+  head: () => ({ meta: [{ title: "Affiliate Disclosure — OfferSendly" }] }),
   component: () => (
     <GlobalLayout>
       <article className="max-w-3xl mx-auto px-6 py-20">
         <h1>Affiliate Disclosure</h1>
         <p className="mt-6 text-[18px] text-[var(--text-secondary)] leading-relaxed">
-          OnlineOnSale is a participant in affiliate programs — including ClickBank — and earns a
+          OfferSendly is a participant in affiliate programs — including ClickBank — and earns a
           commission when you purchase through a link on this site. This never costs you more.
         </p>
         <h2 className="mt-12">Why we accept commissions</h2>
@@ -31,7 +31,7 @@ export const Route = createFileRoute("/disclosure")({
         </ul>
         <h2 className="mt-10">Questions?</h2>
         <p className="mt-4 text-[var(--text-secondary)]">
-          Email editorial@onlineonsale.com.
+          Email editorial@offersendly.com.
         </p>
       </article>
     </GlobalLayout>

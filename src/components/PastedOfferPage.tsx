@@ -11,7 +11,7 @@ import type { Offer } from "@/lib/offer-schema";
 //   3. Strip the pasted <footer> (we add our own with legal links)
 //   4. Strip inline <script> (dangerouslySetInnerHTML doesn't execute them
 //      anyway — see html-extractor.ts for rationale)
-//   5. Inject our standard OnlineOnSale footer at the bottom
+//   5. Inject our standard OfferSendly footer at the bottom
 // ────────────────────────────────────────────────────────────────────────────
 
 export function PastedOfferPage({ offer }: { offer: Offer }) {
@@ -83,7 +83,7 @@ export function PastedOfferPage({ offer }: { offer: Offer }) {
         // since only the authenticated /admin user can paste it.
         dangerouslySetInnerHTML={{ __html: body }}
       />
-      <OnlineOnSaleFooter />
+      <OfferSendlyFooter />
     </>
   );
 }
@@ -93,7 +93,7 @@ export function PastedOfferPage({ offer }: { offer: Offer }) {
 // Includes the four legal links Meta requires + the affiliate disclosure.
 // ────────────────────────────────────────────────────────────────────────────
 
-function OnlineOnSaleFooter() {
+function OfferSendlyFooter() {
   return (
     <footer
       style={{
@@ -110,7 +110,7 @@ function OnlineOnSaleFooter() {
       <div style={{ maxWidth: 820, margin: "0 auto" }}>
         <p>
           ©{" "}
-          {new Date().getFullYear()} <strong style={{ color: "rgba(255,255,255,0.65)" }}>OnlineOnSale</strong>{" "}
+          {new Date().getFullYear()} <strong style={{ color: "rgba(255,255,255,0.65)" }}>OfferSendly</strong>{" "}
           ·{" "}
           <Link to="/privacy" style={legalLinkStyle}>
             Privacy Policy
@@ -129,7 +129,7 @@ function OnlineOnSaleFooter() {
           </Link>
         </p>
         <p style={{ marginTop: 10, maxWidth: 720, margin: "10px auto 0" }}>
-          This page contains affiliate links. OnlineOnSale may earn a commission on
+          This page contains affiliate links. OfferSendly may earn a commission on
           purchases made through links on this page, at no extra cost to you. Statements
           on this website have not been evaluated by the U.S. Food and Drug Administration.
           Products are not intended to diagnose, treat, cure, or prevent any disease.

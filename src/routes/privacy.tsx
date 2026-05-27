@@ -4,10 +4,10 @@ import { H3, LegalPage } from "@/components/LegalPage";
 export const Route = createFileRoute("/privacy")({
   head: () => ({
     meta: [
-      { title: "Privacy Policy — OnlineOnSale" },
-      { name: "description", content: "How OnlineOnSale handles your data, cookies, and the Meta (Facebook) Pixel." },
+      { title: "Privacy Policy — OfferSendly" },
+      { name: "description", content: "How OfferSendly handles your data, cookies, and the Meta (Facebook) Pixel." },
     ],
-    links: [{ rel: "canonical", href: "https://onlineonsale.com/privacy" }],
+    links: [{ rel: "canonical", href: "https://offersendly.com/privacy" }],
   }),
   component: PrivacyPage,
 });
@@ -16,7 +16,7 @@ function PrivacyPage() {
   return (
     <LegalPage title="Privacy Policy" lastUpdated="May 2026">
       <p>
-        This website ("Site"), <strong>onlineonsale.com</strong>, is operated by an independent
+        This website ("Site"), <strong>offersendly.com</strong>, is operated by an independent
         affiliate marketer. We respect your privacy and are committed to protecting any
         personal information you share with us.
       </p>
@@ -73,7 +73,7 @@ function PrivacyPage() {
 
       <H3>Contact</H3>
       <p>
-        For privacy-related questions: <strong>support@onlineonsale.com</strong>
+        For privacy-related questions: <strong>support@offersendly.com</strong>
       </p>
     </LegalPage>
   );
